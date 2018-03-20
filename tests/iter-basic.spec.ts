@@ -21,6 +21,12 @@ describe('iter-basic', () => {
         expect(sum).toEqual(cmp);
     }),
 
+    it('forEach', () => {
+        const result: number[] = [];
+        iter(input).forEach(x => result.push(x));
+        expect(result).toEqual(input);
+    });
+
     it('supports looping', () => {
         const result: number[] = [];
 

@@ -200,6 +200,54 @@ export class IterableWrapper<T> implements Iterable<T> {
         return [...this.iterator];
     }
 
+    toMap<TKey>(keyMapper: (item: T) => TKey): Map<TKey, T[]> {
+        const result = new Map<TKey, T[]>();
+
+        for (const item of this.iterator) {
+            const key = keyMapper(item),
+                  group = result.get(key);
+
+            if (group) {
+                group.push(item);
+            } else {
+                result.set(key, [item]);
+            }
+        }
+
+        return result;
+    }
+
+    toSet(): Set<T> {
+        return new Set<T>(this.iterator);
+    }
+
+    /**
+     * Executes a function on each element in the iterable sequence.
+     * @param action Function executed for each element.
+     */
+    forEach(action: (item: T) => void): void {
+        for (const item of this.iterator) {
+            action(item);
+        }
+    }
+
+    /**
+     * Flattens a nested iterable collection.
+     * @param mapper Returns nested collection for each element.
+     * @returns Iterable over all items in all nested collections.
+     */
+    flatMap<TItem>(mapper: (item: T) => TItem[]): IterableWrapper<TItem> {
+        const iterator = this.iterator;
+
+        function* inner() {
+            for (const item of iterator) {
+                yield* mapper(item);
+            }
+        };
+
+        return new IterableWrapper(inner());
+    }
+
     /**
      * Concatenates another iterable after this one.
      * @param another Another iterable such as this object or a plain Array.
@@ -263,5 +311,23 @@ export class IterableWrapper<T> implements Iterable<T> {
         };
 
         return new IterableWrapper(inner());
+    }
+
+    sum(mapper: (item: T) => number): number {
+        return this.reduce((acc, item) => acc + mapper(item), 0);
+    }
+
+    min(mapper: (item: T) => number): number {
+        return this.reduce((acc, item) => {
+            const value = mapper(item);
+            return value < acc ? value : acc;
+        }, Number.MAX_VALUE);
+    }
+
+    max(mapper: (item: T) => number): number {
+        return this.reduce((acc, item) => {
+            const value = mapper(item);
+            return value > acc ? value : acc;
+        }, Number.MIN_VALUE);
     }
 }
