@@ -1,0 +1,23 @@
+{
+  "name": "ts-iter",
+  "version": "0.5.0",
+  "description": "Iterator utilities for TypeScript",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaroslavsvak/ts-iter.git"
+  },
+  "author": "Jaroslav Svak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jaroslavsvak/ts-iter/issues"
+  },
+  "homepage": "https://github.com/jaroslavsvak/ts-iter#readme"
+}
