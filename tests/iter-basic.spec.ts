@@ -15,6 +15,22 @@ describe('iter-basic', () => {
         expect(result).toEqual(cmp);
     }),
 
+    it('reduce', () => {
+        const sum = iter(input).reduce((acc, x) => acc + x, 0);
+        const cmp = input.reduce((acc, x) => acc + x, 0);
+        expect(sum).toEqual(cmp);
+    }),
+
+    it('supports looping', () => {
+        const result: number[] = [];
+
+        for (const x of iter(input)) {
+            result.push(x);
+        }
+
+        expect(result).toEqual(input);
+    });
+
     it('chain', () => {
         const result = iter(input)
             .filter(x => x > 10)
