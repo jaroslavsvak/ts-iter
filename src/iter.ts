@@ -27,7 +27,7 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * Wrapped iterator of this instance. Allows enumeration using the for-of syntax.
+     * Wrapped iterator of this instance. Allows enumeration by using the for-of syntax.
      */
     public [Symbol.iterator]() {
         return this.iterator;
@@ -35,7 +35,7 @@ export class IterableWrapper<T> implements Iterable<T> {
 
     /**
      * The same functionality as Array.map. Converts all elements using a mapper function.
-     * @param mapper Function that converts an item
+     * @param mapper Function that converts each item.
      */
     map<TResult>(mapper: (item: T) => TResult): IterableWrapper<TResult> {
         const iterator = this.iterator;
