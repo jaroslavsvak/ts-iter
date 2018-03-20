@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,10 @@
   "bugs": {
     "url": "https://github.com/jaroslavsvak/ts-iter/issues"
   },
-  "homepage": "https://github.com/jaroslavsvak/ts-iter#readme"
+  "homepage": "https://github.com/jaroslavsvak/ts-iter#readme",
+  "devDependencies": {
+    "@types/jasmine": "^2.8.6",
+    "jasmine": "^3.1.0",
+    "typescript": "^2.7.2"
+  }
 }
