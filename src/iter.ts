@@ -217,6 +217,11 @@ export class IterableWrapper<T> implements Iterable<T> {
         return result;
     }
 
+    /**
+     * Creates Set<T> (built-in) JavaScript object out of the iterable sequence.
+     * Duplications are removed.
+     * @return Set of unique elements in the iterable sequence.
+     */
     toSet(): Set<T> {
         return new Set<T>(this.iterator);
     }
@@ -313,21 +318,34 @@ export class IterableWrapper<T> implements Iterable<T> {
         return new IterableWrapper(inner());
     }
 
-    sum(mapper: (item: T) => number): number {
+    /**
+     * Calculates sum using a mapper funcation that produces the summed number for each element.
+     * @param mapper Function that returns a number for each element.
+     * @returns Sum of all numbers returned by mapper function.
+     */
+    sum(mapper: (item: T) => number): number | undefined {
         return this.reduce((acc, item) => acc + mapper(item), 0);
     }
 
-    min(mapper: (item: T) => number): number {
-        return this.reduce((acc, item) => {
-            const value = mapper(item);
-            return value < acc ? value : acc;
-        }, Number.MAX_VALUE);
+    /**
+     * Finds minimum using a mapper function that produces the summed number for each element.
+     * @param mapper Function that returns a number for each element.
+     * @returns Minimum of all numbers returned by the mapper function. Undefined if iterable sequence is empty.
+     */
+    min(mapper: (item: T) => number): number | undefined {
+        return this.reduce((acc: number | undefined, item) =>
+            Math.min(acc || Number.MAX_VALUE, mapper(item)),
+            undefined);
     }
 
-    max(mapper: (item: T) => number): number {
-        return this.reduce((acc, item) => {
-            const value = mapper(item);
-            return value > acc ? value : acc;
-        }, Number.MIN_VALUE);
+    /**
+     * Finds maximum using a mapper function that produces the summed number for each element.
+     * @param mapper Function that returns a number for each element.
+     * @returns Maximum of all numbers returned by mapper function. Undefined if iterable sequence is empty.
+     */
+    max(mapper: (item: T) => number): number | undefined {
+        return this.reduce((acc: number | undefined, item) =>
+            Math.max(acc || Number.MIN_VALUE, mapper(item)),
+            undefined);
     }
 }

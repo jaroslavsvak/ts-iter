@@ -14,8 +14,18 @@ describe('iter-calcc', () => {
         expect(result).toEqual(3);
     });
 
+    it('min on empty collection', () => {
+        const empty: number[] = [];
+        expect(iter(empty).min(x => x)).toBe(undefined);
+    });
+
     it('max', () => {
         const result = iter(input).max(x => x);
         expect(result).toEqual(20);
+    });
+
+    it('max on empty collection', () => {
+        const empty: number[] = [];
+        expect(iter(empty).max(x => x)).toBe(undefined);
     });
 });
