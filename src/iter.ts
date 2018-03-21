@@ -11,7 +11,7 @@ export function iter<T>(array: T[]): IterableWrapper<T> {
  * in order to provide higher-order functions that operate over it.
  * @param iterable An existing iterable such as generator function, Set.keys, Map.entries ...
  */
-export function wrap<T>(iterable: IterableIterator<T>): IterableWrapper<T> {
+export function wrapIterable<T>(iterable: IterableIterator<T>): IterableWrapper<T> {
     return new IterableWrapper(iterable[Symbol.iterator]());
 }
 
@@ -23,14 +23,17 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Creates a new instance.
      * @param iterator The wrapped iterable.
      */
-    constructor(private readonly iterator: IterableIterator<T>) {
+    constructor(iterator: IterableIterator<T>) {
+        this.iterator = iterator;
     }
+
+    private iterator?: IterableIterator<T>;
 
     /**
      * Wrapped iterator of this instance. Allows enumeration by using the for-of syntax.
      */
     public [Symbol.iterator]() {
-        return this.iterator;
+        return this.invalidateIterator();
     }
 
     /**
@@ -38,7 +41,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param mapper Function that converts each item.
      */
     map<TResult>(mapper: (item: T) => TResult): IterableWrapper<TResult> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             for (const item of iterator) {
@@ -54,7 +57,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param predicate Predicate that accepts an element and return true to pass / false to skip it.
      */
     filter(predicate: (item: T) => boolean): IterableWrapper<T> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             for (const item of iterator) {
@@ -72,7 +75,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param accumulator An accumulator function
      */
     reduce<TResult>(accumulator: (acc: TResult, item: T) => TResult, initialValue: TResult): TResult {
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             initialValue = accumulator(initialValue, item);
         }
 
@@ -85,7 +88,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns The found element or undefined if not found.
      */
     find(predicate: (item: T) => boolean): T | undefined {
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             if (predicate(item)) {
                 return item;
             };
@@ -102,7 +105,7 @@ export class IterableWrapper<T> implements Iterable<T> {
     findIndex(predicate: (item: T) => boolean): number {
         let index = 0;
 
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             if (predicate(item)) {
                 return index;
             };
@@ -133,7 +136,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns true if all elements pass or the sequence is empty.
      */
     every(predicate: (item: T) => boolean): boolean {
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             if (!predicate(item)) {
                 return false;
             };
@@ -148,7 +151,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns true if at least one element passes; false if not or the sequence is empty.
      */
     some(predicate: (item: T) => boolean): boolean {
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             if (predicate(item)) {
                 return true;
             };
@@ -163,7 +166,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns True if found.
      */
     contains(item: T): boolean {
-        for (const element of this.iterator) {
+        for (const element of this.invalidateIterator()) {
             if (item === element) {
                 return true;
             };
@@ -177,7 +180,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns true if there are no elements.
      */
     isEmpty(): boolean {
-        return this.iterator.next().done;
+        return this.invalidateIterator().next().done;
     }
 
     /**
@@ -186,7 +189,9 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     length(): number {
         let count = 0;
-        while (!this.iterator.next().done) {
+        const iterator = this.invalidateIterator();
+
+        while (!iterator.next().done) {
             count++;
         }
 
@@ -197,15 +202,20 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Constructs an Array out of the iterable collection.
      */
     toArray(): T[] {
-        return [...this.iterator];
+        return [...this.invalidateIterator()];
     }
 
+    /**
+     * Creates a Map<TKey, TValue> out of all elements in the iterable sequence.
+     * @param keyMapper Function that produces key for each individual element.
+     * @returns A new Map.
+     */
     toMap<TKey>(keyMapper: (item: T) => TKey): Map<TKey, T[]> {
         const result = new Map<TKey, T[]>();
 
-        for (const item of this.iterator) {
-            const key = keyMapper(item),
-                  group = result.get(key);
+        for (const item of this.invalidateIterator()) {
+            const key: TKey = keyMapper(item),
+                  group: T[] | undefined = result.get(key);
 
             if (group) {
                 group.push(item);
@@ -223,7 +233,35 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @return Set of unique elements in the iterable sequence.
      */
     toSet(): Set<T> {
-        return new Set<T>(this.iterator);
+        return new Set<T>(this.invalidateIterator());
+    }
+
+    /**
+     * Creates antoher iterable with distinct sequence (removes duplicates).
+     * @param keyMapper Optional. A function that produces key used to distinguish among elements.
+     * Elements with duplicate keys are ommitted. Don't specify to make comparison by equality operator ===.
+     * @returns Another iterable sequence with unique elements.
+     */
+    distinct(keyMapper: ((item: T) => any) | undefined = undefined): IterableWrapper<T> {
+        if (!keyMapper) {
+            keyMapper = (item) => item;
+        }
+
+        const iterator = this.invalidateIterator();
+        const uniqueValues = new Set();
+
+        function* inner() {
+            for (const item of iterator) {
+                const key = keyMapper!(item);
+
+                if (!uniqueValues.has(key)) {
+                    uniqueValues.add(key);
+                    yield item;
+                }
+            }
+        };
+
+        return new IterableWrapper(inner());
     }
 
     /**
@@ -231,7 +269,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param action Function executed for each element.
      */
     forEach(action: (item: T) => void): void {
-        for (const item of this.iterator) {
+        for (const item of this.invalidateIterator()) {
             action(item);
         }
     }
@@ -242,7 +280,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns Iterable over all items in all nested collections.
      */
     flatMap<TItem>(mapper: (item: T) => TItem[]): IterableWrapper<TItem> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             for (const item of iterator) {
@@ -259,7 +297,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns A new instance containing elements from this and the given iterable.
      */
     concat(another: Iterable<T>): IterableWrapper<T> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             for (const item of iterator) {
@@ -275,12 +313,45 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
+     * Creates a sorted iterable sequence.
+     * @param sortFn Sorting function. Same as Array.sort.
+     * @returns Sorted sequence.
+     */
+    sort(sortFn: ((a: T, b: T) => number) | undefined = undefined): IterableWrapper<T> {
+        const allItems = [...this.invalidateIterator()];
+        allItems.sort(sortFn);
+        return iter(allItems);
+    }
+
+    /**
+     * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
+     * @returns The first element.
+     */
+    head(): T {
+        const result = this.invalidateIterator().next();
+        if (result.done) {
+            throw new Error('The iterable sequence is empty');
+        }
+
+        return result.value;
+    }
+
+    /**
+     * Returns the first element in the iterable sequence. Returns undefined in case the iterable is empty.
+     * @returns The first element or undefined.
+     */
+    tryGetHead(): T | undefined {
+        const result = this.invalidateIterator().next();
+        return result.done ? undefined : result.value;
+    }
+
+    /**
      * Skips a given number of elements in the collection.
      * @param numElements Number of skipped elements.
      * @returns Another instance that skips n elements.
      */
     skip(numElements: number): IterableWrapper<T> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             let counter = 0;
@@ -302,7 +373,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns Another instance limited to max. n elements.
      */
     take(maxElements: number): IterableWrapper<T> {
-        const iterator = this.iterator;
+        const iterator = this.invalidateIterator();
 
         function* inner() {
             let counter = 0;
@@ -347,5 +418,17 @@ export class IterableWrapper<T> implements Iterable<T> {
         return this.reduce((acc: number | undefined, item) =>
             Math.max(acc || Number.MIN_VALUE, mapper(item)),
             undefined);
+    }
+
+    private invalidateIterator(): IterableIterator<T> {
+        if (!this.iterator) {
+            throw new Error(
+                'The wrapped iterator has been already used and is positioned at the end of the sequence. ' +
+                'If you wish to use it again, please reconstruct it.');
+        }
+
+        const result = this.iterator;
+        this.iterator = undefined;
+        return result;
     }
 }

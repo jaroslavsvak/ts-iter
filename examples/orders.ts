@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter, wrapIterable } from '../src/iter';
 
 const orders = [
     {
@@ -24,8 +24,22 @@ const orders = [
     }
 ];
 
+// flatten all order rows and sum total sales
 const salesTotal = iter(orders)
     .flatMap(o => o.rows)
     .sum(r => r.pricePerUnit * r.qty);
 
 console.log('Total sales', salesTotal);
+
+// sum sales per customer
+const ordersByCust = iter(orders).toMap(o => o.customer);
+
+wrapIterable(ordersByCust.keys())
+    .map(custName => {
+        const orders = ordersByCust.get(custName)!;
+        return {
+            customer: custName,
+            sales: iter(orders).sum(o => iter(o.rows).sum(r => r.qty * r.pricePerUnit)!)
+        };
+    })
+    .forEach(c => console.log(c.customer, c.sales));

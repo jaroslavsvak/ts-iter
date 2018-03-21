@@ -1,7 +1,7 @@
 TS-iter
 =======
 
-## Typescript library that enahnces ES 2015 iterables
+Typescript library that provides higher-order functions to ES 2015 iterables
 
 The library is inspired by C# Linq and Java streams. It wraps an Array or another iterable and provides
 chainable functions such as map, filter, and reduce. There is a significant performance gain over chaining
@@ -13,7 +13,7 @@ are fully supported. Beware that Internet Explorer does not support ES 2015 and 
 
 NPM package will be provided as soon as the library reaches Beta version.
 
-As of now, copy src/iter.ts to include the library in your project. TypeScript compiler has to target ES 2015 to compile it successfully. Modify your tsconfig.json and set tartget to es2015 or newer.
+As of now, copy src/iter.ts to include the library in your project. TypeScript compiler has to target ES 2015 to compile it successfully. Make sure that your tsconfig.json and sets compilation tartget to es2015 or newer.
 
 ```json
 "target": "es2015"
@@ -98,4 +98,17 @@ const salesTotal = iter(orders)
     .sum(r => r.pricePerUnit * r.qty);
 
 console.log('Total sales', salesTotal);
+
+// sum sales per customer
+const ordersByCust = iter(orders).toMap(o => o.customer);
+
+wrapIterable(ordersByCust.keys())
+    .map(custName => {
+        const orders = ordersByCust.get(custName)!;
+        return {
+            customer: custName,
+            sales: iter(orders).sum(o => iter(o.rows).sum(r => r.qty * r.pricePerUnit)!)
+        };
+    })
+    .forEach(c => console.log(c.customer, c.sales));
 ```

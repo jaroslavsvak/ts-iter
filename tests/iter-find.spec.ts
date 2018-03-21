@@ -64,5 +64,17 @@ describe('iter-find', () => {
         const empty: string[] = [];
         expect(iter(empty).contains('non-existing-item')).toEqual(false);
     });
+
+    it('head', () => {
+        const head = iter(input).head();
+        expect(head).toEqual(input[0]);
+        expect(() => iter([]).head()).toThrowError();
+    });
+
+    it('tryGetHead', () => {
+        const head = iter(input).tryGetHead();
+        expect(head).toEqual(input[0]);
+        expect(iter([]).tryGetHead()).toEqual(undefined);
+    });
 });
 
