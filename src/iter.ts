@@ -19,6 +19,8 @@ export function wrapIterable<T>(iterable: IterableIterator<T>): IterableWrapper<
  * Wraps IterableIterator<T> into an object that provides functionality over the iterable
  */
 export class IterableWrapper<T> implements Iterable<T> {
+    private iterator?: IterableIterator<T>;
+    
     /**
      * Creates a new instance.
      * @param iterator The wrapped iterable.
@@ -27,17 +29,15 @@ export class IterableWrapper<T> implements Iterable<T> {
         this.iterator = iterator;
     }
 
-    private iterator?: IterableIterator<T>;
-
     /**
-     * Wrapped iterator of this instance. Allows enumeration by using the for-of syntax.
+     * Wrapped iterator of this instance. Allows enumeration by using the `for-of` syntax.
      */
     public [Symbol.iterator]() {
         return this.invalidateIterator();
     }
 
     /**
-     * The same functionality as Array.map. Converts all elements using a mapper function.
+     * The same functionality as `Array.map`. Converts all elements using a mapper function.
      * @param mapper Function that converts each item.
      */
     map<TResult>(mapper: (item: T) => TResult): IterableWrapper<TResult> {
@@ -53,7 +53,7 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * The same functionality as Array.filter. Filters elements using a predicate.
+     * The same functionality as `Array.filter`. Filters elements using a predicate.
      * @param predicate Predicate that accepts an element and return true to pass / false to skip it.
      */
     filter(predicate: (item: T) => boolean): IterableWrapper<T> {
@@ -71,7 +71,8 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * The same functionality as Array.reduce. Passes all elements into an accumulator function to produce a single-value result.
+     * The same functionality as `Array.reduce`.
+     * Passes all elements into an accumulator function to produce a single-value result.
      * @param accumulator An accumulator function
      */
     reduce<TResult>(accumulator: (acc: TResult, item: T) => TResult, initialValue: TResult): TResult {
@@ -206,7 +207,7 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * Creates a Map<TKey, TValue> out of all elements in the iterable sequence.
+     * Creates a `Map<TKey, TValue>` (built-in JavaScript object) out of all elements in the iterable sequence.
      * @param keyMapper Function that produces key for each individual element.
      * @returns A new Map.
      */
@@ -228,7 +229,7 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * Creates Set<T> (built-in) JavaScript object out of the iterable sequence.
+     * Creates `Set<T>` (built-in JavaScript object) out of the iterable sequence.
      * Duplications are removed.
      * @return Set of unique elements in the iterable sequence.
      */
@@ -418,6 +419,66 @@ export class IterableWrapper<T> implements Iterable<T> {
         return this.reduce((acc: number | undefined, item) =>
             Math.max(acc || Number.MIN_VALUE, mapper(item)),
             undefined);
+    }
+
+    /**
+     * Returns new iterable that is an intersection with this instance and another one or an `Array`.
+     * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`
+     * @param equalsFn Optional. Function that compares two elements. If ommitted, comparison will use equality operator ===.
+     * @returns An intersection of these iterables or arrays.
+     */
+    intersect(
+        anotherCollection: IterableWrapper<T> | T[],
+        equalsFn: ((a: T, b: T) => boolean) | undefined = undefined)
+        : IterableWrapper<T> {
+
+        const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
+        const iterator = this.invalidateIterator();        
+
+        function* innerUseIndexOf() {
+            for (const item of iterator) {
+                if (another.indexOf(item) !== -1) {
+                    yield item;
+                }
+            }
+        };
+
+        function* innerUseEqualsFn() {
+            for (const item of iterator) {
+                if (another.find(x => equalsFn!(x, item))) {
+                    yield item;
+                }
+            }
+        };
+
+        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf());
+    }
+
+    except(
+        anotherCollection: IterableWrapper<T> | T[],
+        equalsFn: ((a: T, b: T) => boolean) | undefined = undefined)
+        : IterableWrapper<T> {
+
+        const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
+        const iterator = this.invalidateIterator();        
+
+        function* innerUseIndexOf() {
+            for (const item of iterator) {
+                if (another.indexOf(item) === -1) {
+                    yield item;
+                }
+            }
+        };
+
+        function* innerUseEqualsFn() {
+            for (const item of iterator) {
+                if (!another.find(x => equalsFn!(x, item))) {
+                    yield item;
+                }
+            }
+        };
+
+        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf());
     }
 
     private invalidateIterator(): IterableIterator<T> {

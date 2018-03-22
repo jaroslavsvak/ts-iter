@@ -8,7 +8,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jasmine"
+    "test": "jasmine",
+    "doc": "typedoc --out ./doc/ ./src/iter.ts ./src/generators.ts"
   },
   "repository": {
     "type": "git",
