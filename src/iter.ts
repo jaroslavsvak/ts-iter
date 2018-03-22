@@ -12,19 +12,14 @@ export function iter<T>(arrayOrIterable: T[] | IterableIterator<T>): IterableWra
  * @type T Type of collection elements.
  */
 export class IterableWrapper<T> implements Iterable<T> {
-    private iterator?: IterableIterator<T>;
-    private array?: T[];
+    private iterator?: T[] | IterableIterator<T>;
     
     /**
      * Creates a new instance.
      * @param iterator The wrapped `Array` or other iterable.
      */
     constructor(iterator: T[] | IterableIterator<T>) {
-        if (Array.isArray(iterator)) {
-            this.array = iterator;
-        } else {
-            this.iterator = iterator;
-        }
+        this.iterator = iterator;
     }
 
     /**
@@ -187,8 +182,8 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns number of elements in the iterable.
      */
     length(): number {
-        if (this.array) {
-            return this.array.length;
+        if (Array.isArray(this.iterator)) {
+            return this.iterator.length;
         }
 
         let count = 0;
@@ -502,15 +497,14 @@ export class IterableWrapper<T> implements Iterable<T> {
 
     private invalidateIterator(): IterableIterator<T> {
         if (!this.iterator) {
-            if (this.array) {
-                return this.array[Symbol.iterator]();
-                
-            }
-
             throw new Error(
                 'The wrapped iterator has been already used and is positioned at the end of the sequence. ' +
                 'Unless the source is an array, we cannot reuse it. ' +
                 'If you wish to use it again, please reconstruct the iterable wrapper.');
+        }
+
+        if (Array.isArray(this.iterator)) {
+            return this.iterator[Symbol.iterator]();
         }
 
         const result = this.iterator;
