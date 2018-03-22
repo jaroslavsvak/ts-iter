@@ -1,4 +1,4 @@
-import { iter, wrapIterable } from '../src/iter';
+import { iter } from '../src/iter';
 
 const orders = [
     {
@@ -34,7 +34,7 @@ console.log('Total sales', salesTotal);
 // sum sales per customer
 const ordersByCust = iter(orders).toMap(o => o.customer);
 
-wrapIterable(ordersByCust.keys())
+iter(ordersByCust.keys())
     .map(custName => {
         const orders = ordersByCust.get(custName)!;
         return {
@@ -43,3 +43,11 @@ wrapIterable(ordersByCust.keys())
         };
     })
     .forEach(c => console.log(c.customer, c.sales));
+
+// sum sales per customer 2nd option
+console.log('Sales per customer');
+
+iter(orders)
+    .groupBy(o => o.customer)
+    .map(g => [g.key, g.group.sum(items => 1)])
+    .forEach(c => console.log(c[0], c[1]));

@@ -26,9 +26,6 @@ for (const name of kidsNames) {
     console.log(name);
 }
 
-// length() returns length of iterable (after applying filter)
-console.log('There are', kidsNames.length(), ' kids in our family');
-
 // reduce example
 const ageTotal = iter(family).reduce((acc, p) => acc + p.age, 0);
 const ageAvg = ageTotal / family.length;

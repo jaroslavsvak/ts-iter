@@ -1,9 +1,9 @@
 import { range } from '../src/generators';
-import { iter, wrapIterable } from '../src/iter';
+import { iter } from '../src/iter';
 
 describe('wraps various objects', () => {
     it('JS generator function', () => {
-        const result = wrapIterable(range(1, 11))
+        const result = iter(range(1, 11))
             .map(x => x + 1)
             .reduce((acc, x) => acc + x, 0);
 
@@ -12,10 +12,7 @@ describe('wraps various objects', () => {
 
     it('set', () => {
         const input = new Set([1, 5, 10]);
-
-        const result = wrapIterable(input.keys())
-            .reduce((acc, x) => acc + x, 0);
-
+        const result = iter(input.keys()).reduce((acc, x) => acc + x, 0);
         expect(result).toEqual(16);
     });
 });

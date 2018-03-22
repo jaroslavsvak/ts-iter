@@ -1,4 +1,4 @@
-import { iter, wrapIterable } from '../src/iter';
+import { iter } from '../src/iter';
 
 const input = [5, 3, 3, 10, 5];
 

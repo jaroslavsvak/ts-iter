@@ -1,32 +1,30 @@
 /**
- * Wraps an Array into IterableWrapper<T>
+ * Wraps an `Array` or IterableIterator<T> into IterableWrapper<T>
  * in order to provide higher-order functions that operate over the array.
  */
-export function iter<T>(array: T[]): IterableWrapper<T> {
-    return new IterableWrapper(array[Symbol.iterator]());
+export function iter<T>(arrayOrIterable: T[] | IterableIterator<T>): IterableWrapper<T> {
+    return new IterableWrapper(arrayOrIterable);
 }
 
 /**
- * Wraps an existing iterable object
- * in order to provide higher-order functions that operate over it.
- * @param iterable An existing iterable such as generator function, Set.keys, Map.entries ...
- */
-export function wrapIterable<T>(iterable: IterableIterator<T>): IterableWrapper<T> {
-    return new IterableWrapper(iterable[Symbol.iterator]());
-}
-
-/**
- * Wraps IterableIterator<T> into an object that provides functionality over the iterable
+ * Wraps IterableIterator<T> into an object that provides functionality over the iterable.
+ * @template T Type of collection elements.
+ * @type T Type of collection elements.
  */
 export class IterableWrapper<T> implements Iterable<T> {
     private iterator?: IterableIterator<T>;
+    private array?: T[];
     
     /**
      * Creates a new instance.
-     * @param iterator The wrapped iterable.
+     * @param iterator The wrapped `Array` or other iterable.
      */
-    constructor(iterator: IterableIterator<T>) {
-        this.iterator = iterator;
+    constructor(iterator: T[] | IterableIterator<T>) {
+        if (Array.isArray(iterator)) {
+            this.array = iterator;
+        } else {
+            this.iterator = iterator;
+        }
     }
 
     /**
@@ -189,6 +187,10 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns number of elements in the iterable.
      */
     length(): number {
+        if (this.array) {
+            return this.array.length;
+        }
+
         let count = 0;
         const iterator = this.invalidateIterator();
 
@@ -228,6 +230,16 @@ export class IterableWrapper<T> implements Iterable<T> {
         return result;
     }
 
+    groupBy<TKey>(keyMapper: (item: T) => TKey): IterableWrapper<{ key: TKey, group: IterableWrapper<T> }> {
+        return iter(this.toMap(keyMapper).entries())
+            .map(e => {
+                return {
+                    key: e[0],
+                    group: iter(e[1])
+                }
+            });
+    }
+
     /**
      * Creates `Set<T>` (built-in JavaScript object) out of the iterable sequence.
      * Duplications are removed.
@@ -243,7 +255,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Elements with duplicate keys are ommitted. Don't specify to make comparison by equality operator ===.
      * @returns Another iterable sequence with unique elements.
      */
-    distinct(keyMapper: ((item: T) => any) | undefined = undefined): IterableWrapper<T> {
+    distinct(keyMapper?: (item: T) => any): IterableWrapper<T> {
         if (!keyMapper) {
             keyMapper = (item) => item;
         }
@@ -318,7 +330,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param sortFn Sorting function. Same as Array.sort.
      * @returns Sorted sequence.
      */
-    sort(sortFn: ((a: T, b: T) => number) | undefined = undefined): IterableWrapper<T> {
+    sort(sortFn?: (a: T, b: T) => number): IterableWrapper<T> {
         const allItems = [...this.invalidateIterator()];
         allItems.sort(sortFn);
         return iter(allItems);
@@ -423,13 +435,13 @@ export class IterableWrapper<T> implements Iterable<T> {
 
     /**
      * Returns new iterable that is an intersection with this instance and another one or an `Array`.
-     * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`
+     * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`.
      * @param equalsFn Optional. Function that compares two elements. If ommitted, comparison will use equality operator ===.
      * @returns An intersection of these iterables or arrays.
      */
     intersect(
         anotherCollection: IterableWrapper<T> | T[],
-        equalsFn: ((a: T, b: T) => boolean) | undefined = undefined)
+        equalsFn?: (a: T, b: T) => boolean)
         : IterableWrapper<T> {
 
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
@@ -454,9 +466,16 @@ export class IterableWrapper<T> implements Iterable<T> {
         return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf());
     }
 
+    /**
+     * Subtracts another collection from this one. Elements present in the provided collection will be removed
+     * from this iterable sequence.
+     * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`.
+     * @param equalsFn Optional. Function that compares two elements. If ommitted, comparison will use equality operator ===.
+     * @returns Copy of this iterable sequence wihout elements found in another collection.
+     */
     except(
         anotherCollection: IterableWrapper<T> | T[],
-        equalsFn: ((a: T, b: T) => boolean) | undefined = undefined)
+        equalsFn?: (a: T, b: T) => boolean)
         : IterableWrapper<T> {
 
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
@@ -483,9 +502,15 @@ export class IterableWrapper<T> implements Iterable<T> {
 
     private invalidateIterator(): IterableIterator<T> {
         if (!this.iterator) {
+            if (this.array) {
+                return this.array[Symbol.iterator]();
+                
+            }
+
             throw new Error(
                 'The wrapped iterator has been already used and is positioned at the end of the sequence. ' +
-                'If you wish to use it again, please reconstruct it.');
+                'Unless the source is an array, we cannot reuse it. ' +
+                'If you wish to use it again, please reconstruct the iterable wrapper.');
         }
 
         const result = this.iterator;
