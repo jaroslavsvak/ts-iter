@@ -18,14 +18,14 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Creates a new instance.
      * @param iterator The wrapped `Array` or other iterable.
      */
-    constructor(iterator: T[] | IterableIterator<T>) {
+    constructor(iterator: T[] | IterableIterator<T>, private source?: IterableWrapper<T>) {
         this.iterator = iterator;
     }
 
     /**
      * Wrapped iterator of this instance. Allows enumeration by using the `for-of` syntax.
      */
-    public [Symbol.iterator]() {
+    public [Symbol.iterator](): IterableIterator<T> {
         return this.invalidateIterator();
     }
 
@@ -60,7 +60,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(inner());
+        return new IterableWrapper(inner(), this);
     }
 
     /**
@@ -269,7 +269,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(inner());
+        return new IterableWrapper(inner(), this);
     }
 
     /**
@@ -317,7 +317,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(inner());
+        return new IterableWrapper(inner(), this);
     }
 
     /**
@@ -359,20 +359,33 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns Another instance that skips n elements.
      */
     skip(numElements: number): IterableWrapper<T> {
-        const iterator = this.invalidateIterator();
-
-        function* inner() {
-            let counter = 0;
-            for (const item of iterator) {
-                if (counter++ < numElements) {
-                    continue;
+        if (Array.isArray(this.iterator)) {
+            const array = this.iterator;
+            
+            function* innerArray() {
+                for (let i = numElements; i < array.length; i++) {
+                    yield array[i];
                 }
+            };
 
-                yield item;
-            }
-        };
+            return new IterableWrapper(innerArray(), this);
 
-        return new IterableWrapper(inner());
+        } else {
+            const iterator = this.invalidateIterator();
+
+            function* inner() {
+                let counter = 0;
+                for (const item of iterator) {
+                    if (counter++ < numElements) {
+                        continue;
+                    }
+
+                    yield item;
+                }
+            };
+
+            return new IterableWrapper(inner(), this);
+        }
     }
 
     /**
@@ -394,7 +407,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(inner());
+        return new IterableWrapper(inner(), this);
     }
 
     /**
@@ -458,7 +471,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf());
+        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf(), this);
     }
 
     /**
@@ -492,15 +505,19 @@ export class IterableWrapper<T> implements Iterable<T> {
             }
         };
 
-        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf());
+        return new IterableWrapper(equalsFn ? innerUseEqualsFn() : innerUseIndexOf(), this);
     }
 
     private invalidateIterator(): IterableIterator<T> {
         if (!this.iterator) {
-            throw new Error(
-                'The wrapped iterator has been already used and is positioned at the end of the sequence. ' +
-                'Unless the source is an array, we cannot reuse it. ' +
-                'If you wish to use it again, please reconstruct the iterable wrapper.');
+            if (!this.source) {
+                throw new Error(
+                    'The wrapped iterator has been already used and is positioned at the end of the sequence. ' +
+                    'Unless the source is an array, we cannot reuse it. ' +
+                    'If you wish to use it again, please reconstruct the iterable wrapper.');
+            }
+
+            this.iterator = this.source[Symbol.iterator]();
         }
 
         if (Array.isArray(this.iterator)) {

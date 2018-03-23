@@ -23,5 +23,11 @@ describe('iter-paging', () => {
     it('skip and take', () => {
         const result = iter(input).skip(2).take(3).toArray();
         expect(result).toEqual([20, 8, 16]);
-    })
+    });
+
+    it('skip non-array', () => {
+        const nonArray = input.map(x => x * 2);
+        const result = iter(nonArray).skip(input.length - 1);
+        expect(result.toArray()).toEqual([input[input.length - 1] * 2]);
+    });
 });
