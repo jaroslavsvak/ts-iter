@@ -27,7 +27,8 @@ const family = [
     { name: 'Jack', age: 42 },
     { name: 'Leena', age: 39 },
     { name: 'Tim', age: 8 },
-    { name: 'Jane', age: 17 }
+    { name: 'Jane', age: 17 },
+    { name: 'Tina', age: 12 },
 ];
 
 // filter and map example
@@ -40,19 +41,18 @@ iter(family)
 
 // IterableWrapper allows for-of looping as well as forEach
 console.log('Kids:');
+const kids = iter(family).filter(p => p.age < 18);
 
-const kidsNames = iter(family)
-    .filter(p => p.age < 18)
-    .map(p => p.name);
-
-for (const name of kidsNames) {
-    console.log(name);
+for (const kid of kids) {
+    console.log(kid.name);
 }
 
-// reduce example
-const ageTotal = iter(family).reduce((acc, p) => acc + p.age, 0);
-const ageAvg = ageTotal / family.length;
-console.log('Avg age', ageAvg);
+// length() counts elements in the sequence
+console.log('There are', kids.length(), 'kids in our family');
+
+// sum example
+const ageTotal = kids.sum(k => k.age);
+console.log('Kids avg age', ageTotal / kids.length());
 ```
 
 Note that there is no benefit in using this library over Array built-in methods unless you chain method calls togeter.
@@ -90,6 +90,7 @@ const orders = [
     }
 ];
 
+// flatten all order rows and sum total sales
 const salesTotal = iter(orders)
     .flatMap(o => o.rows)
     .sum(r => r.pricePerUnit * r.qty);
@@ -99,7 +100,7 @@ console.log('Total sales', salesTotal);
 // sum sales per customer
 const ordersByCust = iter(orders).toMap(o => o.customer);
 
-wrapIterable(ordersByCust.keys())
+iter(ordersByCust.keys())
     .map(custName => {
         const orders = ordersByCust.get(custName)!;
         return {
@@ -108,4 +109,12 @@ wrapIterable(ordersByCust.keys())
         };
     })
     .forEach(c => console.log(c.customer, c.sales));
+
+// sum sales per customer 2nd option
+console.log('Sales per customer');
+
+iter(orders)
+    .groupBy(o => o.customer)
+    .map(g => [g.key, g.group.sum(item => iter(item.rows).sum(r => r.pricePerUnit * r.qty))])
+    .forEach(c => console.log(c[0], c[1]));
 ```

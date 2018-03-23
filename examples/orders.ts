@@ -49,5 +49,5 @@ console.log('Sales per customer');
 
 iter(orders)
     .groupBy(o => o.customer)
-    .map(g => [g.key, g.group.sum(items => 1)])
+    .map(g => [g.key, g.items.sum(item => iter(item.rows).sum(r => r.pricePerUnit * r.qty))])
     .forEach(c => console.log(c[0], c[1]));

@@ -9,12 +9,16 @@ describe('iter-calc', () => {
         expect(result).toEqual(cmp);
     });
 
+    it('sum in empty collection', () => {
+        expect(iter([]).sum(x => 100)).toEqual(0);
+    });
+
     it('min', () => {
         const result = iter(input).min(x => x);
         expect(result).toEqual(3);
     });
 
-    it('min on empty collection', () => {
+    it('min in empty collection', () => {
         const empty: number[] = [];
         expect(iter(empty).min(x => x)).toBe(undefined);
     });
@@ -24,7 +28,7 @@ describe('iter-calc', () => {
         expect(result).toEqual(20);
     });
 
-    it('max on empty collection', () => {
+    it('max in empty collection', () => {
         const empty: number[] = [];
         expect(iter(empty).max(x => x)).toBe(undefined);
     });

@@ -15,9 +15,14 @@ describe('iter-paging', () => {
 
     it('concat', () => {
         const another = [50, 100, 300];
+        const result = iter(input).concat(another);
 
-        expect(iter(input).concat(another).toArray()).toEqual(input.concat(another));
+        expect(result.toArray()).toEqual(input.concat(another));
         expect(iter(input).concat(iter(another)).toArray()).toEqual(input.concat(another));
+
+        // reconstrunction test
+        expect(result.concat(result).toArray())
+            .toEqual(input.concat(another).concat(input).concat(another));
     });
 
     it('skip and take', () => {

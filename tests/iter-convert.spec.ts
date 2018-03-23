@@ -20,8 +20,13 @@ describe('iter-convert', () => {
     });
 
     it('distinct', () => {
-        const result = iter(input).distinct().toArray().sort();
-        expect(result).toEqual([10, 3, 5]);
+        const distingElements = [10, 3, 5];
+        const result = iter(input).distinct();
+        expect(result.toArray().sort()).toEqual(distingElements);
+
+        // reconstruction test
+        expect(result.toArray().sort()).toEqual(distingElements);
+        expect(result.sort().toArray()).toEqual(distingElements);
     });
     
     it('distinct with custom key', () => {

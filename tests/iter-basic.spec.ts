@@ -21,6 +21,14 @@ describe('iter-basic', () => {
         expect(sum).toEqual(cmp);
     }),
 
+    it('reduce is restartable', () => {
+        const cmp = input.filter(x => x > 7).reduce((acc, x) => acc + x, 0);
+        const nums = iter(input).filter(x => x > 7);
+        
+        expect(nums.reduce((acc, x) => acc + x, 0)).toEqual(cmp);
+        expect(nums.reduce((acc, x) => acc + x, 0)).toEqual(cmp);
+    }),
+
     it('forEach', () => {
         const result: number[] = [];
         iter(input).forEach(x => result.push(x));
@@ -28,13 +36,21 @@ describe('iter-basic', () => {
     });
 
     it('supports looping', () => {
-        const result: number[] = [];
+        let result: number[] = [];
 
-        for (const x of iter(input)) {
-            result.push(x);
+        function test() {
+            for (const x of iter(input)) {
+                result.push(x);
+            }
+
+            expect(result).toEqual(input);
         }
 
-        expect(result).toEqual(input);
+        test();
+
+        // is looping restartable?
+        result = [];
+        test(); 
     });
 
     it('chain', () => {
@@ -48,6 +64,19 @@ describe('iter-basic', () => {
             .map(x => x + 1);
         
         expect(result).toEqual(cmp);
-    })
+    });
+
+    it('restartable', () => {
+        const calc1 = iter(input).map(x => x + 1);
+        const calc2 = calc1.map(x => x + 1);
+        const calc3 = calc2.map(x => x + 1);
+        expect(calc3.toArray()).toEqual(input.map(x => x + 3));
+
+        const filter1 = calc3.filter(x => x > 15);
+        expect(filter1.toArray()).toEqual(input.map(x => x + 3).filter(x => x > 15));
+
+        const filter2 = filter1.filter(x => x % 2 == 0);
+        expect(filter2.toArray()).toEqual(input.map(x => x + 3).filter(x => x > 15).filter(x => x % 2 == 0));
+    });
 });
 
