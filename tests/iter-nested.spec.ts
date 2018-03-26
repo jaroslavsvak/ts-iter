@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 describe('iter-nested', () => {
     const orders = [

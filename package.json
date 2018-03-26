@@ -1,15 +1,14 @@
 {
   "name": "ts-iter",
-  "version": "0.5.0",
-  "description": "Iterator utilities for TypeScript",
+  "version": "0.5.1",
+  "description": "Iterator utilities for TypeScript / ES2015",
+  "keywords": ["Typescript", "ES2015", "Iterator", "Collections"],
   "main": "index.js",
   "directories": {
-    "example": "examples",
-    "test": "tests"
   },
   "scripts": {
     "test": "jasmine",
-    "doc": "typedoc --out ./doc/ ./src/iter.ts ./src/generators.ts"
+    "doc": "typedoc --out ./doc/ ./index.ts ./generators.ts"
   },
   "repository": {
     "type": "git",

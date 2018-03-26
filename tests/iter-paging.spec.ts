@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 describe('iter-paging', () => {
     const input = [5, 3, 20, 8, 16, 10, 6, 19];
@@ -34,5 +34,10 @@ describe('iter-paging', () => {
         const nonArray = input.map(x => x * 2);
         const result = iter(nonArray).skip(input.length - 1);
         expect(result.toArray()).toEqual([input[input.length - 1] * 2]);
+    });
+
+    it('takeWhile', () => {
+        const result = iter(input).takeWhile(x => x < 10);
+        expect(result.toArray()).toEqual([5, 3]);
     });
 });

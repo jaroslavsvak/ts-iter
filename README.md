@@ -9,11 +9,19 @@ standard Array methods (filter, map, reduce ...). Array methods always construct
 application performance.
 
 The library runs well in NodeJS 8.x, 9.x and browsers that support ES 2015. Recent versions of Chrome, FireFox, Edge, and Safari
-are fully supported. Beware that Internet Explorer does not support ES 2015 and thus this library is not working in any version of IE.
+are fully supported. Beware that Internet Explorer does not support ES 2015 iterator contract
+and thus this library is not working in any version of IE.
 
-NPM package will be provided as soon as the library reaches Beta version.
+## Installation
+```
+npm install ts-iter
+```
+Alternatively copy index.ts into your project.
 
-As of now, copy src/iter.ts to include the library in your project. TypeScript compiler has to target ES 2015 to compile it successfully. Make sure that your tsconfig.json and sets compilation tartget to es2015 or newer.
+## Full API documentation
+Front page [https://jsvak.azurewebsites.net/ts-iter](https://jsvak.azurewebsites.net/ts-iter)
+
+All functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
 
 ```json
 "target": "es2015"
@@ -21,7 +29,7 @@ As of now, copy src/iter.ts to include the library in your project. TypeScript c
 
 ## Basic usage - map, filter, reduce
 ```ts
-import { iter } from '../src/iter';
+import { iter } from 'ts-iter';
 
 const family = [
     { name: 'Jack', age: 42 },
@@ -64,7 +72,7 @@ visible during processing leading to undesired behavior.
 
 ## Advanced usage
 ```ts
-import { iter } from '../src/iter';
+import { iter } from 'ts-iter';
 
 const orders = [
     {
@@ -123,7 +131,7 @@ iter(orders)
 ```
 ## Set functions
 ```ts
-import { iter } from '../src/iter';
+import { iter } from 'ts-iter';
 
 const fridge = iter(['Butter', 'Bread roll', 'Egg', 'Sausage', 'Steak', 'Ham', 'Fries']);
 const breakfast = ['Bread roll', 'Butter', 'Egg', 'Ham'];

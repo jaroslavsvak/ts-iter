@@ -113,20 +113,6 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * Finds the first element that matches provided predicate. Throws an Error if the element is not found.
-     * @param predicate Predicate that has to return true when passed element is the desired one.
-     * @returns The found element.
-     */
-    getFirst(predicate: (item: T) => boolean): T {
-        const result = this.find(predicate);
-        if (!result) {
-            throw new Error('getFirst failed - no element found');
-        }
-
-        return result;
-    }
-
-    /**
      * Evaluates whether all elements pass a provided predicate.
      * @param predicate Predicate that has to return true when passed element is the desired one.
      * @returns true if all elements pass or the sequence is empty.
@@ -418,6 +404,29 @@ export class IterableWrapper<T> implements Iterable<T> {
                 yield item;
             }
         };
+
+        return new IterableWrapper(inner);
+    }
+
+    /**
+     * Returns elements in the collection as long as a condition is met.
+     * Stops iteration when given predicate returns `false` for the first time.
+     * @param predicate Predicate that accepts an element and return true to pass / false to skip it.
+     */
+    takeWhile(predicate: (item: T) => boolean): IterableWrapper<T> {
+        const inner = () => {
+            const iterator = this.iterate();
+
+            return (function* () {
+                for (const item of iterator) {
+                    if (predicate(item)) {
+                        yield item;
+                    } else {
+                        break;
+                    }
+                }
+            })();
+        }
 
         return new IterableWrapper(inner);
     }

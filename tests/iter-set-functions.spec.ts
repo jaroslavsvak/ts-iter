@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 describe('iter-set-functions', () => {
     const input1 = [5, 3, 20, 8, 16, 10, 6, 19];

@@ -1,5 +1,5 @@
-import { range } from '../src/generators';
-import { iter } from '../src/iter';
+import { range } from '../generators';
+import { iter } from '../index';
 
 describe('wraps various objects', () => {
     it('JS generator function', () => {

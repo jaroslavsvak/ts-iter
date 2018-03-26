@@ -1,4 +1,4 @@
-import { range, rangeInclusive } from '../src/generators';
+import { range, rangeInclusive } from '../generators';
 
 describe('generators', () => {
     it('simple range', () => {

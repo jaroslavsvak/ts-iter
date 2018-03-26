@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 describe('iter-find', () => {
     const input = ['apple', 'bannana', 'orange', 'lemon', 'pear'];
@@ -17,14 +17,6 @@ describe('iter-find', () => {
 
         result = iter(input).findIndex(x => x === 'non-existing-item');
         expect(result).toEqual(-1);
-    });
-
-    it('getFirst', () => {
-        const result = iter(input).getFirst(x => x === 'pear');
-        expect(result).toEqual('pear');
-
-        expect(() => iter(input).getFirst(x => x === 'non-existing-item'))
-            .toThrowError('getFirst failed - no element found');
     });
 
     it('every', () => {

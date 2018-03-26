@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 describe('iter-convert', () => {
     const input = [5, 3, 3, 10, 5];

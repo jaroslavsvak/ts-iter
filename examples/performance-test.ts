@@ -1,4 +1,4 @@
-import { iter } from '../src/iter';
+import { iter } from '../index';
 
 function* generateRnd(count: number) {
     for (let i = 0; i < count; i++) {
