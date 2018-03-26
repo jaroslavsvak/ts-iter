@@ -40,4 +40,34 @@ describe('iter-paging', () => {
         const result = iter(input).takeWhile(x => x < 10);
         expect(result.toArray()).toEqual([5, 3]);
     });
+
+    it('tryGetAt', () => {
+        expect(iter(input).tryGetAt(0)).toEqual(input[0]);
+        expect(iter(input).tryGetAt(4)).toEqual(input[4]);
+        expect(iter(input).tryGetAt(1000)).toEqual(undefined);
+        expect(iter(input).tryGetAt(-2)).toEqual(undefined);
+    });
+
+    it('tryGetAt non-array', () => {
+        const inx = iter(input).map(x => x + 1);
+        expect(inx.tryGetAt(0)).toEqual(input[0] + 1);
+        expect(inx.tryGetAt(4)).toEqual(input[4] + 1);
+        expect(inx.tryGetAt(1000)).toEqual(undefined);
+        expect(inx.tryGetAt(-2)).toEqual(undefined);
+    });
+
+    it('getAt', () => {
+        expect(iter(input).getAt(0)).toEqual(input[0]);
+        expect(iter(input).getAt(4)).toEqual(input[4]);
+        expect(() => iter(input).getAt(1000)).toThrowError();
+        expect(() => iter(input).getAt(-2)).toThrowError();
+    });
+
+    it('getAt non-array', () => {
+        const inx = iter(input).map(x => x + 1);
+        expect(inx.getAt(0)).toEqual(input[0] + 1);
+        expect(inx.getAt(4)).toEqual(input[4] + 1);
+        expect(() => inx.getAt(1000)).toThrowError();
+        expect(() => inx.getAt(-2)).toThrowError();
+    });
 });

@@ -1,7 +1,7 @@
 TS-iter
 =======
 
-Typescript library that provides higher-order functions to ES 2015 iterables
+Typescript library that provides higher-order functions to ES 2015 iterables.
 
 The library is inspired by C# Linq and Java streams. It wraps an Array or another iterable and provides
 chainable functions such as map, filter, and reduce. There is a significant performance gain over chaining
@@ -21,7 +21,7 @@ Alternatively copy index.ts into your project.
 ## Full API documentation
 Front page [https://jsvak.azurewebsites.net/ts-iter](https://jsvak.azurewebsites.net/ts-iter)
 
-All functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
+Index of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
 
 ```json
 "target": "es2015"

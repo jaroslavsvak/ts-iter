@@ -184,11 +184,20 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
-     * Constructs an Array out of the iterable collection.
+     * Constructs an `Array` out of the iterable collection.
      */
     toArray(): T[] {
         return [...this.iterate()];
     }
+
+    /**
+     * Constructs a `ReadonlyArray` out of the iterable collection.
+     * Note that `ReadonlyArray<T>` is TypeScript-specific interface. No such object exists in JS.
+     * It's simply an Array protected from writing by TS compiler.
+     */
+    toReadonlyArray(): ReadonlyArray<T> {
+        return [...this.iterate()] as ReadonlyArray<T>;
+    }    
 
     /**
      * Creates a `Map<TKey, TValue>` (built-in JavaScript object) out of all elements in the iterable sequence.
@@ -234,6 +243,15 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     toSet(): Set<T> {
         return new Set<T>(this.iterate());
+    }
+
+    /**
+     * Constructs a `ReadonlySet` out of the iterable collection. Duplications are removed.
+     * Note that `ReadonlySet<T>` is TypeScript-specific interface. No such object exists in JS.
+     * It's simply a Set protected from writing by TS compiler.
+     */
+    toReadonlySet(): ReadonlySet<T> {
+        return new Set<T>(this.iterate()) as ReadonlySet<T>;
     }
 
     /**
@@ -325,8 +343,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     sort(sortFn?: (a: T, b: T) => number): IterableWrapper<T> {
         const allItems = [...this.iterate()];
-        allItems.sort(sortFn);
-        return iter(allItems);
+        return iter(allItems.sort(sortFn));
     }
 
     /**
@@ -349,6 +366,34 @@ export class IterableWrapper<T> implements Iterable<T> {
     tryGetHead(): T | undefined {
         const result = this.iterate().next();
         return result.done ? undefined : result.value;
+    }
+
+    /**
+     * Retrieves an element at given index.
+     * @param index Index
+     * @returns Element at the index. Throws an error if the index is out of range.
+     */
+    getAt(index: number): T {
+        const result = this.tryGetAt(index);
+        if (result === undefined) {
+            throw new Error('Index ' + index.toString() + ' out of range');
+        }
+
+        return result;
+    }
+
+    /**
+     * Attempts to retrieve an element at given index.
+     * @param index Index
+     * @returns Element at the index or `undefined` if the index is out of range.
+     */
+    tryGetAt(index: number): T | undefined {
+        const iterator = this.openIteratorFn();
+        if (Array.isArray(iterator)) {
+            return iterator[index];
+        }
+
+        return index < 0 ? undefined : this.skip(index).tryGetHead();
     }
 
     /**
@@ -474,7 +519,7 @@ export class IterableWrapper<T> implements Iterable<T> {
         : IterableWrapper<T> {
 
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
-        const iterator = this.iterate();        
+        const iterator = this.iterate();
 
         function* innerUseIndexOf() {
             for (const item of iterator) {
