@@ -519,22 +519,27 @@ export class IterableWrapper<T> implements Iterable<T> {
         : IterableWrapper<T> {
 
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
-        const iterator = this.iterate();
 
-        function* innerUseIndexOf() {
-            for (const item of iterator) {
-                if (another.indexOf(item) !== -1) {
-                    yield item;
+        const innerUseIndexOf = () => {
+            const iterator = this.iterate();
+            return function*() {
+                for (const item of iterator) {
+                    if (another.indexOf(item) !== -1) {
+                        yield item;
+                    }
                 }
-            }
+            }();
         };
 
-        function* innerUseEqualsFn() {
-            for (const item of iterator) {
-                if (another.find(x => equalsFn!(x, item))) {
-                    yield item;
+        const innerUseEqualsFn = () => {
+            const iterator = this.iterate();
+            return function*() {
+                for (const item of iterator) {
+                    if (another.find(x => equalsFn!(x, item))) {
+                        yield item;
+                    }
                 }
-            }
+            }();
         };
 
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
@@ -552,23 +557,28 @@ export class IterableWrapper<T> implements Iterable<T> {
         equalsFn?: (a: T, b: T) => boolean)
         : IterableWrapper<T> {
 
-        const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
-        const iterator = this.iterate();        
+        const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();        
 
-        function* innerUseIndexOf() {
-            for (const item of iterator) {
-                if (another.indexOf(item) === -1) {
-                    yield item;
+        const innerUseIndexOf = () => {
+            const iterator = this.iterate();
+            return function*() {
+                for (const item of iterator) {
+                    if (another.indexOf(item) === -1) {
+                        yield item;
+                    }
                 }
-            }
+            }();
         };
 
-        function* innerUseEqualsFn() {
-            for (const item of iterator) {
-                if (!another.find(x => equalsFn!(x, item))) {
-                    yield item;
+        const innerUseEqualsFn = () => {
+            const iterator = this.iterate();
+            return function*() {
+                for (const item of iterator) {
+                    if (!another.find(x => equalsFn!(x, item))) {
+                        yield item;
+                    }
                 }
-            }
+            }();
         };
 
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);

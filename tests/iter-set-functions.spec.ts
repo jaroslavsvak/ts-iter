@@ -73,4 +73,27 @@ describe('iter-set-functions', () => {
         result = iter(obj1).except(iter(obj2), areEqual).map(p => p.id).toArray()
         expect(result).toEqual(expectedResult);
     });
+
+    it('intersect restartable', () => {
+        const m1 = iter(input1).map(x => x + 1);
+        const m2 = iter(input2).map(x => x + 1);
+        const result = m1.intersect(m2);
+
+        expect(result.toArray()).toEqual([21, 11]);
+
+        // reiteration test
+        expect(result.toArray()).toEqual([21, 11]);
+    });
+
+    it('except restartable', () => {
+        const m1 = iter(input1).map(x => x + 1);
+        const m2 = iter(input2).map(x => x + 1);
+        const result = m1.except(m2);
+        const expeceted = [6, 4, 9, 17, 7, 20];
+
+        expect(result.toArray()).toEqual(expeceted);
+
+        // reiteration test
+        expect(result.toArray()).toEqual(expeceted);
+    });
 });

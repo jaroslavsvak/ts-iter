@@ -53,4 +53,4 @@ iter(orders)
             totalSales:   i.items.sum(a => a.qty * a.pricePerUnit)
         }
     })
-    .forEach(x => console.log(x));
+    .forEach(console.log);

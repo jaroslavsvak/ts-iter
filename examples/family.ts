@@ -14,7 +14,7 @@ console.log('Adults:');
 iter(family)
     .filter(p => p.age >= 18)
     .map(p => p.name)
-    .forEach(name => console.log(name));
+    .forEach(console.log);
 
 // IterableWrapper allows for-of looping as well as forEach
 console.log('Kids:');

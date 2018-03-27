@@ -166,9 +166,17 @@ class IterableWrapper {
         return count;
     }
     /**
-     * Constructs an Array out of the iterable collection.
+     * Constructs an `Array` out of the iterable collection.
      */
     toArray() {
+        return [...this.iterate()];
+    }
+    /**
+     * Constructs a `ReadonlyArray` out of the iterable collection.
+     * Note that `ReadonlyArray<T>` is TypeScript-specific interface. No such object exists in JS.
+     * It's simply an Array protected from writing by TS compiler.
+     */
+    toReadonlyArray() {
         return [...this.iterate()];
     }
     /**
@@ -209,6 +217,14 @@ class IterableWrapper {
      * @return Set of unique elements in the iterable sequence.
      */
     toSet() {
+        return new Set(this.iterate());
+    }
+    /**
+     * Constructs a `ReadonlySet` out of the iterable collection. Duplications are removed.
+     * Note that `ReadonlySet<T>` is TypeScript-specific interface. No such object exists in JS.
+     * It's simply a Set protected from writing by TS compiler.
+     */
+    toReadonlySet() {
         return new Set(this.iterate());
     }
     /**
@@ -287,8 +303,7 @@ class IterableWrapper {
      */
     sort(sortFn) {
         const allItems = [...this.iterate()];
-        allItems.sort(sortFn);
-        return iter(allItems);
+        return iter(allItems.sort(sortFn));
     }
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
@@ -308,6 +323,30 @@ class IterableWrapper {
     tryGetHead() {
         const result = this.iterate().next();
         return result.done ? undefined : result.value;
+    }
+    /**
+     * Retrieves an element at given index.
+     * @param index Index
+     * @returns Element at the index. Throws an error if the index is out of range.
+     */
+    getAt(index) {
+        const result = this.tryGetAt(index);
+        if (result === undefined) {
+            throw new Error('Index ' + index.toString() + ' out of range');
+        }
+        return result;
+    }
+    /**
+     * Attempts to retrieve an element at given index.
+     * @param index Index
+     * @returns Element at the index or `undefined` if the index is out of range.
+     */
+    tryGetAt(index) {
+        const iterator = this.openIteratorFn();
+        if (Array.isArray(iterator)) {
+            return iterator[index];
+        }
+        return index < 0 ? undefined : this.skip(index).tryGetHead();
     }
     /**
      * Skips a given number of elements in the collection.
@@ -412,23 +451,26 @@ class IterableWrapper {
      */
     intersect(anotherCollection, equalsFn) {
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
-        const iterator = this.iterate();
-        function* innerUseIndexOf() {
-            for (const item of iterator) {
-                if (another.indexOf(item) !== -1) {
-                    yield item;
+        const innerUseIndexOf = () => {
+            const iterator = this.iterate();
+            return function* () {
+                for (const item of iterator) {
+                    if (another.indexOf(item) !== -1) {
+                        yield item;
+                    }
                 }
-            }
-        }
-        ;
-        function* innerUseEqualsFn() {
-            for (const item of iterator) {
-                if (another.find(x => equalsFn(x, item))) {
-                    yield item;
+            }();
+        };
+        const innerUseEqualsFn = () => {
+            const iterator = this.iterate();
+            return function* () {
+                for (const item of iterator) {
+                    if (another.find(x => equalsFn(x, item))) {
+                        yield item;
+                    }
                 }
-            }
-        }
-        ;
+            }();
+        };
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
     }
     /**
@@ -440,23 +482,26 @@ class IterableWrapper {
      */
     except(anotherCollection, equalsFn) {
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
-        const iterator = this.iterate();
-        function* innerUseIndexOf() {
-            for (const item of iterator) {
-                if (another.indexOf(item) === -1) {
-                    yield item;
+        const innerUseIndexOf = () => {
+            const iterator = this.iterate();
+            return function* () {
+                for (const item of iterator) {
+                    if (another.indexOf(item) === -1) {
+                        yield item;
+                    }
                 }
-            }
-        }
-        ;
-        function* innerUseEqualsFn() {
-            for (const item of iterator) {
-                if (!another.find(x => equalsFn(x, item))) {
-                    yield item;
+            }();
+        };
+        const innerUseEqualsFn = () => {
+            const iterator = this.iterate();
+            return function* () {
+                for (const item of iterator) {
+                    if (!another.find(x => equalsFn(x, item))) {
+                        yield item;
+                    }
                 }
-            }
-        }
-        ;
+            }();
+        };
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
     }
     iterate() {
