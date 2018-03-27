@@ -47,7 +47,7 @@ iter(input).toSet();
 // Produces ReadonlySet<number> = [5, 6, 7, 8], duplicate elements are removed from the set
 iter(input).toReadonlySet();
 
-// Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }. Passed function generates key for each element.
+// Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
 iter(input).toMap(x => x > 6 ? 'big' : 'small');
 
 
@@ -94,9 +94,6 @@ iter(input).intersect([5, 8, 10]);
 
 // Produces Iterable<number> = 6, 7
 iter(input).except([5, 8, 10]);
-
-// Produces Iterable<number> = 5, 6, 7, 8, 4, 10
-iter(input).concat([4, 5, 8, 10]).distinct();
 
 
 /*** Restructuring functions ***/

@@ -4,9 +4,9 @@ TS-iter
 Typescript library that provides higher-order functions working with ES 2015 iterables.
 
 The library is inspired by C# Linq and Java streams. It wraps an Array or another iterable and provides
-chainable functions such as map, filter, and reduce. There is a significant performance gain over chaining
-standard Array methods (filter, map, reduce ...). Array methods always construct a new array which impacts
-application performance.
+chainable functions such as map, filter, and reduce.
+There are additional functions that do not exist in Array and performance benefits when using iterables
+( Array methods reconstruct the entire Array whereas iterables make only a lightweight Iterator object instead).
 
 The library runs well in NodeJS 8.x, 9.x and browsers that support ES 2015. Recent versions of Chrome, FireFox, Edge, and Safari
 are fully supported. Beware that Internet Explorer does not support ES 2015 iterator contract
@@ -201,7 +201,7 @@ iter(input).toSet();
 // Produces ReadonlySet<number> = [5, 6, 7, 8], duplicate elements are removed from the set
 iter(input).toReadonlySet();
 
-// Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }. Passed function generates key for each element.
+// Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
 iter(input).toMap(x => x > 6 ? 'big' : 'small');
 
 
@@ -248,9 +248,6 @@ iter(input).intersect([5, 8, 10]);
 
 // Produces Iterable<number> = 6, 7
 iter(input).except([5, 8, 10]);
-
-// Produces Iterable<number> = 5, 6, 7, 8, 4, 10
-iter(input).concat([4, 5, 8, 10]).distinct();
 
 
 /*** Restructuring functions ***/
