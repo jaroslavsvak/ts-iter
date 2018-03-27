@@ -1,7 +1,9 @@
 import { iter } from '../index';
 
 describe('iter-convert', () => {
-    const input = [5, 3, 3, 10, 5];
+    let input: number[];
+
+    beforeEach(() => input = [5, 3, 3, 10, 5]);
 
     it('toSet', () => {
         const result = iter(input).toSet();
@@ -46,13 +48,35 @@ describe('iter-convert', () => {
     });
 
     it('sort', () => {
-        const result = iter(input).sort().toArray();
+        const orig = [...input],
+              work = [...input];
+
+        const result = iter(work).sort().toArray();
         expect(result).toEqual(input.sort());
+
+        // make sure that the original input remains unchanged
+        expect(work).toEqual(orig);
     });
 
     it('sort with sortFn', () => {
         const sortFn = (a: number, b: number) => b - a;
         const result = iter(input).sort(sortFn).toArray();
         expect(result).toEqual(input.sort(sortFn));
+    });
+
+    it('reverse', () => {
+        const orig = [...input],
+              work = [...input];
+
+        const result = iter(work).reverse().toArray();
+        expect(result).toEqual(input.reverse());
+
+        // make sure that the original input remains unchanged
+        expect(work).toEqual(orig);
+    });
+
+    it('toSeparatedString', () => {
+        const result = iter(input).toSeparatedString(':');
+        expect(result).toEqual(input.join(':'));
     });
 });

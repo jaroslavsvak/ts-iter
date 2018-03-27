@@ -33,6 +33,9 @@ iter(input).concat([9, 10]);
 // Produces Iterable<number> = 5, 6, 7, 8
 iter(input).sort((a, b) => a - b);
 
+// Produces Iterable<number> = 8, 7, 6, 5
+iter(input).reverse();
+
 
 // *** Conversion functions ***
 // Produces Array<number> = [5, 6, 7, 8]
@@ -49,6 +52,9 @@ iter(input).toReadonlySet();
 
 // Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
 iter(input).toMap(x => x > 6 ? 'big' : 'small');
+
+// Produces "5; 6; 7; 8"
+console.log( iter(input).toSeparatedString('; ') );
 
 
 // *** Additional stuff ***
@@ -73,8 +79,14 @@ iter(input).tryGetAt(1);
 // Returns true if the iterable collection contains given value (equality check === is applied).
 iter(input).contains(8);
 
-// Produces Iterable<number> 5, 6, 7. Stops as soon as an element does not pass the condition.
+// Produces Iterable<number> = 5, 6, 7. Stops as soon as an element does not pass the condition.
 iter(input).takeWhile(x => x < 8);
+
+// Produces Iterable<number> = 5, 6. Takes the first N elements.
+iter(input).take(2);
+
+// Produces Iterable<number> = 7, 8. Skips the first N elements.
+iter(input).skip(2);
 
 
 // *** Math functions ***
@@ -99,3 +111,11 @@ iter(input).except([5, 8, 10]);
 /*** Restructuring functions ***/
 // Produces a groupping object { big: [7, 8]; small: [5, 6] }, similar to .toMap function
 iter(input).groupBy(x => x > 6 ? 'big' : 'small');
+
+// Accesses nested collections as single iterable. Produces Iterable<number> = 1, 2, 3, 4, 5, 6
+const groups = [
+    { name: 'A', content: [1, 2, 3] },
+    { name: 'B', content: [4, 5, 6] },
+];
+
+iter(groups).flatMap(g => g.content);

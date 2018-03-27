@@ -5,8 +5,8 @@ Typescript library that provides higher-order functions working with ES 2015 ite
 
 The library is inspired by C# Linq and Java streams. It wraps an Array or another iterable and provides
 chainable functions such as map, filter, and reduce.
-There are additional functions that do not exist in Array and performance benefits when using iterables
-( Array methods reconstruct the entire Array whereas iterables make only a lightweight Iterator object instead).
+There is additional functionality (that doesn't exist in arrays) and performance benefits when using iterables
+(array methods reconstruct the entire array whereas iterables make only a lightweight Iterator object instead).
 
 The library runs well in NodeJS 8.x, 9.x and browsers that support ES 2015. Recent versions of Chrome, FireFox, Edge, and Safari
 are fully supported. Beware that Internet Explorer does not support ES 2015 iterator contract
@@ -16,18 +16,18 @@ and thus this library is not working in any version of IE.
 ```
 npm install ts-iter
 ```
-Alternatively copy index.ts into your project.
+
+Make sure that your TypeScript compiler targets ES 2015 or newer (otherwise your code won't compile):
+```json
+"target": "es2015"
+```
 
 ## API documentation
 Front page [https://jsvak.azurewebsites.net/ts-iter](https://jsvak.azurewebsites.net/ts-iter)
 
 Index of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
 
-```json
-"target": "es2015"
-```
-
-## Basic usage - map, filter, reduce
+## Basic usage
 ```ts
 import { iter } from 'ts-iter';
 
@@ -62,7 +62,6 @@ console.log('There are', kids.length(), 'kids in our family');
 const ageTotal = kids.sum(k => k.age);
 console.log('Kids avg age', ageTotal / kids.length());
 ```
-
 Note that there is no benefit in using this library over Array built-in methods unless you chain method calls togeter.
 When you chain calls, arrays are not reconstructed as it happens with Array API. Only a lightweight iterator is created
 by each method.
@@ -142,10 +141,13 @@ const dinner = ['Bread roll', 'Sausage'];
 const eatToday = iter(breakfast).concat(lunch).concat(snack).concat(dinner);
 
 const missingInFridge = eatToday.except(fridge);
-console.log('Shopping list', missingInFridge.toArray());
+console.log('Shopping list', missingInFridge.sort().toSeparatedString());
 
 const alreadyAtHome = eatToday.intersect(fridge);
-console.log('We already have', alreadyAtHome.toArray());
+console.log('We already have', alreadyAtHome.sort().toSeparatedString());
+
+const allKnownFood = eatToday.concat(eatToday).distinct();
+console.log('Everything', allKnownFood.sort().toSeparatedString());
 ```
 
 ## All functions briefly
@@ -187,6 +189,9 @@ iter(input).concat([9, 10]);
 // Produces Iterable<number> = 5, 6, 7, 8
 iter(input).sort((a, b) => a - b);
 
+// Produces Iterable<number> = 5, 6, 7, 8
+iter(input).reverse();
+
 
 // *** Conversion functions ***
 // Produces Array<number> = [5, 6, 7, 8]
@@ -203,6 +208,9 @@ iter(input).toReadonlySet();
 
 // Produces Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
 iter(input).toMap(x => x > 6 ? 'big' : 'small');
+
+// Produces "5; 6; 7; 8"
+console.log( iter(input).toSeparatedString('; ') );
 
 
 // *** Additional stuff ***
@@ -227,8 +235,14 @@ iter(input).tryGetAt(1);
 // Returns true if the iterable collection contains given value (equality check === is applied).
 iter(input).contains(8);
 
-// Produces Iterable<number> 5, 6, 7. Stops as soon as an element does not pass the condition.
+// Produces Iterable<number> = 5, 6, 7. Stops as soon as an element does not pass the condition.
 iter(input).takeWhile(x => x < 8);
+
+// Produces Iterable<number> = 5, 6. Takes the first N elements.
+iter(input).take(2);
+
+// Produces Iterable<number> = 7, 8. Skips the first N elements.
+iter(input).skip(2);
 
 
 // *** Math functions ***
@@ -253,4 +267,15 @@ iter(input).except([5, 8, 10]);
 /*** Restructuring functions ***/
 // Produces a groupping object { big: [7, 8]; small: [5, 6] }, similar to .toMap function
 iter(input).groupBy(x => x > 6 ? 'big' : 'small');
+
+// Accesses nested collections as single iterable. Produces Iterable<number> = 1, 2, 3, 4, 5, 6
+const groups = [
+    { name: 'A', content: [1, 2, 3] },
+    { name: 'B', content: [4, 5, 6] },
+];
+
+iter(groups).flatMap(g => g.content);
 ```
+
+## Author
+Jaroslav Svak, jsvak.azurewebsites.net

@@ -253,6 +253,24 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
+     * Converts all elements into strings and joins them together separated by coma or other separator.
+     * @param separator Separator among element.
+     * @param convert Function that converts element to text. If ommitted `x.toString()` is used.
+     */
+    toSeparatedString(separator = ', ', convert) {
+        if (!convert) {
+            convert = (item) => ((item !== undefined || item !== null) && item.toString()) || '';
+        }
+        let result = '';
+        for (const item of this.iterate()) {
+            if (result.length > 0) {
+                result += separator;
+            }
+            result += convert(item);
+        }
+        return result;
+    }
+    /**
      * Executes a function on each element in the iterable sequence.
      * @param action Function executed for each element.
      */
@@ -304,6 +322,14 @@ class IterableWrapper {
     sort(sortFn) {
         const allItems = [...this.iterate()];
         return iter(allItems.sort(sortFn));
+    }
+    /**
+     * Creates a reversed iterable sequence.
+     * @returns Reversed iterable
+     */
+    reverse() {
+        const allItems = [...this.iterate()];
+        return iter(allItems.reverse());
     }
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.

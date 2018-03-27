@@ -1,6 +1,6 @@
 {
   "name": "ts-iter",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Iterator utilities for TypeScript / ES2015",
   "keywords": ["Typescript", "ES2015", "Iterator", "Collections", "Lazy"],
   "main": "index.js",
