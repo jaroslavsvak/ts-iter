@@ -2,28 +2,34 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Wraps an `Array` or IterableIterator<T> into IterableWrapper<T>
- * in order to provide higher-order functions that operate over the array.
+ * in order to provide higher-order functions that operate over the collection.
+ * @returns IterableWrapper<T> with added functionality
  */
 function iter(arrayOrIterable) {
     return new IterableWrapper(() => arrayOrIterable);
 }
 exports.iter = iter;
 /**
- * Wraps IterableIterator<T> into an object that provides functionality over the iterable.
- * @template T Type of collection elements.
+ * Wraps IterableIterator<T> to provide additional functionality.
+ * Do not modify the wrapped object as long as you are working with its wrapper.
  * @type T Type of collection elements.
  */
 class IterableWrapper {
     /**
      * Creates a new instance.
-     * @param openIterator Functions that returns an `Array` or other iterable. The function lazy-called
-     * on each demand to start the iteration.
+     * @param openIterator Functions that returns an `Array` or other iterable. The function is called
+     * lazily on each demand to start the iteration.
      */
     constructor(openIteratorFn) {
         this.openIteratorFn = openIteratorFn;
     }
     /**
      * Wrapped iterator of this instance. Allows enumeration by using the `for-of` syntax.
+     * @example
+     * const filtered = iter([1, 2, 3, 4, 5]).filter(x => x !== 3);
+     * for (const x of filtered) {
+     *   console.log(x);
+     * }
      */
     [Symbol.iterator]() {
         return this.iterate();
@@ -255,14 +261,18 @@ class IterableWrapper {
     /**
      * Converts all elements into strings and joins them together separated by coma or other separator.
      * @param separator Separator among element.
-     * @param convert Function that converts element to text. If ommitted `x.toString()` is used.
+     * @param convert Function that converts element to text. The function may return `undefined` to skip the element.
+     * If ommitted `x.toString()` is used.
      */
     toSeparatedString(separator = ', ', convert) {
         if (!convert) {
-            convert = (item) => ((item !== undefined || item !== null) && item.toString()) || '';
+            convert = (item) => item && item.toString();
         }
         let result = '';
         for (const item of this.iterate()) {
+            if (item === undefined) {
+                continue;
+            }
             if (result.length > 0) {
                 result += separator;
             }
@@ -328,8 +338,21 @@ class IterableWrapper {
      * @returns Reversed iterable
      */
     reverse() {
-        const allItems = [...this.iterate()];
-        return iter(allItems.reverse());
+        const iterator = this.openIteratorFn();
+        if (Array.isArray(iterator)) {
+            const inner = () => {
+                return (function* () {
+                    for (let i = iterator.length - 1; i >= 0; i--) {
+                        yield iterator[i];
+                    }
+                })();
+            };
+            return new IterableWrapper(inner);
+        }
+        else {
+            const allItems = [...iterator];
+            return iter(allItems.reverse());
+        }
     }
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.

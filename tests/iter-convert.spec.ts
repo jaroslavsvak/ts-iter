@@ -68,15 +68,24 @@ describe('iter-convert', () => {
         const orig = [...input],
               work = [...input];
 
-        const result = iter(work).reverse().toArray();
+        // array as input
+        let result = iter(work).reverse().toArray();
         expect(result).toEqual(input.reverse());
+
+        // iterable as input
+        result = iter(work).map(x => x * 2).reverse().toArray();
+        expect(result).toEqual(input.map(x => x * 2));
 
         // make sure that the original input remains unchanged
         expect(work).toEqual(orig);
     });
 
     it('toSeparatedString', () => {
-        const result = iter(input).toSeparatedString(':');
+        let result = iter(input).toSeparatedString(':');
         expect(result).toEqual(input.join(':'));
+
+        // undefined is skipped, null should be in the output
+        result = iter([...input, undefined, null]).toSeparatedString(':');
+        expect(result).toEqual(input.join(':') + ':null');
     });
 });
