@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * Wraps an `Array` or IterableIterator<T> into IterableWrapper<T>
+ * Shortcut to `IterableWrapper<T>` constructor.<br>
+ * Wraps an `Array` or `IterableIterator<T>` into `IterableWrapper<T>`
  * in order to provide higher-order functions that operate over the collection.
  * @returns IterableWrapper<T> with added functionality
  */
@@ -10,33 +11,36 @@ function iter(arrayOrIterable) {
 }
 exports.iter = iter;
 /**
- * Wraps IterableIterator<T> to provide additional functionality.
- * Do not modify the wrapped object as long as you are working with its wrapper.
- * @type T Type of collection elements.
+ * Wraps `IterableIterator<T>` to provide additional functionality.
+ * There may be performance benefits when you chain multiple calls together since the wrapped
+ * `Array` is not reconstructed.<br>
+ * Do not modify the wrapped collection as long as you are working with its wrapper object.
+ * @type T Type of elements in the colllection.
  */
 class IterableWrapper {
     /**
-     * Creates a new instance.
-     * @param openIterator Functions that returns an `Array` or other iterable. The function is called
-     * lazily on each demand to start the iteration.
+     * Creates a new instance.<br>
+     * There is usually no need to create an instance directly. Prefer shortcut function `iter`
+     * to wrap an `Array` or other object supporting the iterable contract.
+     * @param openIteratorFn Functions that returns an `Array` or other ES 2015 iterable.
+     * The function is called lazily on each demand to start the iteration.
      */
     constructor(openIteratorFn) {
         this.openIteratorFn = openIteratorFn;
     }
     /**
-     * Wrapped iterator of this instance. Allows enumeration by using the `for-of` syntax.
-     * @example
-     * const filtered = iter([1, 2, 3, 4, 5]).filter(x => x !== 3);
-     * for (const x of filtered) {
-     *   console.log(x);
-     * }
+     * Iterator wrapped into this instance. Allows enumeration by using the `for-of` syntax.
      */
     [Symbol.iterator]() {
         return this.iterate();
     }
     /**
-     * The same functionality as `Array.map`. Converts all elements using a mapper function.
-     * @param mapper Function that converts each item.
+     * Similar to `Array.map`.<br>
+     * Creates a new `IterableWrapper<T>` on top of this one.
+     * All elements are passed to a mapper function which is supposed
+     * to convert them and/or create another object based on the original.
+     * @param mapper Function that converts each item. Called lazily on demand.
+     * @returns New `IterableWrapper<T>` with mapped content.
      */
     map(mapper) {
         const inner = () => {
@@ -50,8 +54,11 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * The same functionality as `Array.filter`. Filters elements using a predicate.
-     * @param predicate Predicate that accepts an element and return true to pass / false to skip it.
+     * Similar to `Array.filter`.<br>
+     * Creates a new `IterableWrapper<T>` on top of this one that filters elements using a predicate.
+     * @param predicate Predicate that says whether to accept or reject an element.
+     * Predicate is supposed to return `true` to accept and `false` to reject it.
+     * @returns New `IterableWrapper<T>` with filtered content.
      */
     filter(predicate) {
         const inner = () => {
@@ -67,20 +74,22 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * The same functionality as `Array.reduce`.
-     * Passes all elements into an accumulator function to produce a single-value result.
-     * @param accumulator An accumulator function
+     * The same functionality as `Array.reduce`.<br>
+     * Passes all elements into a function to produce a single-value result.
+     * @param accumulator An aggregation function.
+     * @returns Aggregated value produced by the aggregator function.
      */
-    reduce(accumulator, initialValue) {
+    reduce(aggregator, initialValue) {
         for (const item of this.iterate()) {
-            initialValue = accumulator(initialValue, item);
+            initialValue = aggregator(initialValue, item);
         }
         return initialValue;
     }
     /**
+     * Similar to `Array.find`.<br>
      * Finds the first element that matches provided predicate.
-     * @param predicate Predicate that has to return true when passed element is the desired one.
-     * @returns The found element or undefined if not found.
+     * @param predicate Predicate that has to return `true` when passed element is the desired one.
+     * @returns The found element or `undefined` if none is found.
      */
     find(predicate) {
         for (const item of this.iterate()) {
@@ -92,9 +101,10 @@ class IterableWrapper {
         return undefined;
     }
     /**
-     * Finds the first element that matches provided predicate and returns its 0-base index.
+     * Similar to `Array.findIndex`.<br>
+     * Finds the first element that matches provided predicate and returns its index. Returns -1 if not found.
      * @param predicate Predicate that has to return true when passed element is the desired one.
-     * @returns Index of the found element or -1 if not found.
+     * @returns Zero-based index of the found element or -1 if it's not found.
      */
     findIndex(predicate) {
         let index = 0;
@@ -108,9 +118,11 @@ class IterableWrapper {
         return -1;
     }
     /**
-     * Evaluates whether all elements pass a provided predicate.
-     * @param predicate Predicate that has to return true when passed element is the desired one.
-     * @returns true if all elements pass or the sequence is empty.
+     * Similar to `Array.every`.<br>
+     * Evaluates whether all elements meet a condition.
+     * @param predicate Predicate that has to return `true` when passed element meets the condition.
+     * @returns `true` if all elements are accepted or the sequence is empty.
+     * `false` if one or more elements do not pass the given predicate.
      */
     every(predicate) {
         for (const item of this.iterate()) {
@@ -122,9 +134,10 @@ class IterableWrapper {
         return true;
     }
     /**
-     * Evaluates whether at least one element pass a provided predicate.
-     * @param predicate Predicate that has to return true when passed element is the desired one.
-     * @returns true if at least one element passes; false if not or the sequence is empty.
+     * Similar to `Array.some`.<br>
+     * Evaluates whether at least one element is accepted by provided predicate.
+     * @param predicate Predicate that has to return `true` to accept the passed element.
+     * @returns `true` if at least one element is accepted. `false` if none is accepted or the sequence is empty.
      */
     some(predicate) {
         for (const item of this.iterate()) {
@@ -136,9 +149,9 @@ class IterableWrapper {
         return false;
     }
     /**
-     * Checks whether an item is present.
-     * @param item Item to be found. Equality === is applied to compare.
-     * @returns True if found.
+     * Checks whether an item is present in the collection.
+     * @param item Item to be found. Equality operator === is applied to compare with content of this collection.
+     * @returns `true` if found. Otherwise `false`.
      */
     contains(item) {
         for (const element of this.iterate()) {
@@ -151,14 +164,15 @@ class IterableWrapper {
     }
     /**
      * Determines whether the iterable is empty.
-     * @returns true if there are no elements.
+     * @returns `true` if there are no elements in the wrapped iterable.
      */
     isEmpty() {
         return this.iterate().next().done;
     }
     /**
-     * Calculates lenght of the underlying iterable.
-     * @returns number of elements in the iterable.
+     * Calculates lenght of the underlying iterable.<br>
+     * Optimized if the underlying iterable is an `Array`.
+     * @returns Number of elements in the iterable.
      */
     length() {
         const iterator = this.openIteratorFn();
@@ -172,23 +186,23 @@ class IterableWrapper {
         return count;
     }
     /**
-     * Constructs an `Array` out of the iterable collection.
+     * Constructs a new `Array` out of the iterable collection.
      */
     toArray() {
         return [...this.iterate()];
     }
     /**
-     * Constructs a `ReadonlyArray` out of the iterable collection.
+     * Constructs a new `ReadonlyArray` out of the iterable collection.<br>
      * Note that `ReadonlyArray<T>` is TypeScript-specific interface. No such object exists in JS.
-     * It's simply an Array protected from writing by TS compiler.
+     * It's an Array protected from writing by the TS compiler.
      */
     toReadonlyArray() {
         return [...this.iterate()];
     }
     /**
-     * Creates a `Map<TKey, TValue>` (built-in JavaScript object) out of all elements in the iterable sequence.
-     * @param keyMapper Function that produces key for each individual element.
-     * @returns A new Map.
+     * Constructs a new `Map<TKey, T[]>` (built-in JavaScript object) out of all elements in the iterable collection.
+     * @param keyMapper Function that produces a key for each individual element.
+     * @returns A new `Map<TKey, T[]>`.
      */
     toMap(keyMapper) {
         const result = new Map();
@@ -204,9 +218,13 @@ class IterableWrapper {
         return result;
     }
     /**
-     * Groups content of the collection by a key generated by supplied function.
+     * Groups content of the collection into another `IterableWrapper`.
+     * Each item is a group object with `key` and `items`.<br>
+     * `key` is the value generated by given `keyMapper` functions. Equality === is used to determine what keys are the same.
+     * `items` is array of elements belonging to the group distinguished by `key`.
      * @param keyMapper Makes a key for each element in the collection.
      * @returns Collection of groups with key and items associated with the key.
+     * @see toMap
      */
     groupBy(keyMapper) {
         return iter(this.toMap(keyMapper).entries())
@@ -219,25 +237,27 @@ class IterableWrapper {
     }
     /**
      * Creates `Set<T>` (built-in JavaScript object) out of the iterable sequence.
-     * Duplications are removed.
-     * @return Set of unique elements in the iterable sequence.
+     * Duplicated elements are removed.
+     * @return `Set<T>` of unique elements in the iterable sequence.
      */
     toSet() {
         return new Set(this.iterate());
     }
     /**
-     * Constructs a `ReadonlySet` out of the iterable collection. Duplications are removed.
+     * Constructs a `ReadonlySet<T>` out of the iterable collection. Duplicated elements are removed.
      * Note that `ReadonlySet<T>` is TypeScript-specific interface. No such object exists in JS.
-     * It's simply a Set protected from writing by TS compiler.
+     * It's a `Set<T>` protected from writing by TS compiler.
+     * @returns `ReadonlySet<T>` of unique elements in the iterable sequence.
      */
     toReadonlySet() {
         return new Set(this.iterate());
     }
     /**
-     * Creates antoher iterable with distinct sequence (removes duplicates).
-     * @param keyMapper Optional. A function that produces key used to distinguish among elements.
-     * Elements with duplicate keys are ommitted. Don't specify to make comparison by equality operator ===.
-     * @returns Another iterable sequence with unique elements.
+     * Creates antoher iterable with distinct elements contained in the wrapped collection (removes duplicates).
+     * @param keyMapper A function that produces key used to distinguish among elements.
+     * Elements with duplicate keys are considered as duplicates. If not specified,
+     * the function uses comparison by equality operator ===.
+     * @returns Another iterable based on this one without duplicate elements.
      */
     distinct(keyMapper) {
         if (!keyMapper) {
@@ -259,10 +279,10 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * Converts all elements into strings and joins them together separated by coma or other separator.
-     * @param separator Separator among element.
-     * @param convert Function that converts element to text. The function may return `undefined` to skip the element.
-     * If ommitted `x.toString()` is used.
+     * Converts all elements into strings and joins them together into single string separated by coma or other separator.
+     * @param separator Separator among elements
+     * @param convert Function that converts element to text. The function may return `undefined` to skip an element.
+     * If ommitted `x.toString()` is applied.
      */
     toSeparatedString(separator = ', ', convert) {
         if (!convert) {
@@ -281,8 +301,9 @@ class IterableWrapper {
         return result;
     }
     /**
+     * Similar to `Array.forEach`.<br>
      * Executes a function on each element in the iterable sequence.
-     * @param action Function executed for each element.
+     * @param action Function executed on each element.
      */
     forEach(action) {
         for (const item of this.iterate()) {
@@ -290,9 +311,11 @@ class IterableWrapper {
         }
     }
     /**
-     * Flattens a nested iterable collection.
+     * Accesses nested collections as a single iterable. Provide a `mapper` function that is supposed
+     * to return the nested `Array` contained within the element.
+     * This function makes a new `IterableWrapper<TChildItem>` over all nested elements.
      * @param mapper Returns nested collection for each element.
-     * @returns Iterable over all items in all nested collections.
+     * @returns `Iterable<TChildItem>` over all items in nested collections.
      */
     flatMap(mapper) {
         const inner = () => {
@@ -306,9 +329,11 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * Concatenates another iterable after this one.
+     * Similar to `Array.concat`.<br>
+     * Concatenates another iterable after this one and returns a new `IterableWrapper<T>` that
+     * goes through both collections.
      * @param another Another iterable such as this object or a plain Array.
-     * @returns A new instance containing elements from this and the given iterable.
+     * @returns A new iterable containing elements from both collections.
      */
     concat(another) {
         const inner = () => {
@@ -325,17 +350,22 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * Creates a sorted iterable sequence.
-     * @param sortFn Sorting function. Same as Array.sort.
+     * Similar to `Array.sort`.<br>
+     * Out-of-place sort function. Sorts the collection and returns a new `IteratorWrapper<T>` over ordered results.
+     * Beware that this function constructs a temporary `Array` that might affect performance negatively.
+     * @param compareFn Comparison function (same as `Array.sort` comparison function).
+     * It has to return negative value if a < b, 0 if a === b, positive value if a > b.
      * @returns Sorted sequence.
      */
-    sort(sortFn) {
+    sort(compareFn) {
         const allItems = [...this.iterate()];
-        return iter(allItems.sort(sortFn));
+        return iter(allItems.sort(compareFn));
     }
     /**
-     * Creates a reversed iterable sequence.
-     * @returns Reversed iterable
+     * Similar to `Array,reverse`.<br>
+     * Creates a reversed iterable sequence based on this one.<br>
+     * Optimized if the input iterable is an `Array`. Constructs a temporary `Array` in case it's other kind of iterable.
+     * @returns Reversed iterable `IterableWrapper<T>`
      */
     reverse() {
         const iterator = this.openIteratorFn();
@@ -357,6 +387,7 @@ class IterableWrapper {
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
      * @returns The first element.
+     * @see tryGetHead
      */
     head() {
         const result = this.iterate().next();
@@ -366,8 +397,9 @@ class IterableWrapper {
         return result.value;
     }
     /**
-     * Returns the first element in the iterable sequence. Returns undefined in case the iterable is empty.
+     * Returns the first element in the iterable sequence. Returns `undefined` in case the iterable is empty.
      * @returns The first element or undefined.
+     * @see head
      */
     tryGetHead() {
         const result = this.iterate().next();
@@ -375,8 +407,9 @@ class IterableWrapper {
     }
     /**
      * Retrieves an element at given index.
-     * @param index Index
+     * @param index 0-based index
      * @returns Element at the index. Throws an error if the index is out of range.
+     * @see `tryGetAt`
      */
     getAt(index) {
         const result = this.tryGetAt(index);
@@ -387,7 +420,7 @@ class IterableWrapper {
     }
     /**
      * Attempts to retrieve an element at given index.
-     * @param index Index
+     * @param index 0-based index
      * @returns Element at the index or `undefined` if the index is out of range.
      */
     tryGetAt(index) {
@@ -398,9 +431,10 @@ class IterableWrapper {
         return index < 0 ? undefined : this.skip(index).tryGetHead();
     }
     /**
-     * Skips a given number of elements in the collection.
+     * Skips a given number of elements in the collection.<br>
+     * Optimized if the underlying collection is an `Array`.
      * @param numElements Number of skipped elements.
-     * @returns Another instance that skips n elements.
+     * @returns Another `IterableWrapper<T>` based on this one without the first N elements.
      */
     skip(numElements) {
         const iterator = this.openIteratorFn();
@@ -429,9 +463,9 @@ class IterableWrapper {
         }
     }
     /**
-     * Takes at most N elements and then discontinues the iteration.
-     * @param maxElements Maximun number of elements.
-     * @returns Another instance limited to max. n elements.
+     * Takes at most N elements and then stops the iteration.
+     * @param maxElements Maximum number of elements.
+     * @returns Another `IterableWrapper<T>` limited to maximum of N elements.
      */
     take(maxElements) {
         const iterator = this.iterate();
@@ -450,7 +484,8 @@ class IterableWrapper {
     /**
      * Returns elements in the collection as long as a condition is met.
      * Stops iteration when given predicate returns `false` for the first time.
-     * @param predicate Predicate that accepts an element and return true to pass / false to skip it.
+     * @param predicate Predicate that accepts an element and return `true` to continue / `false` to stop.
+     * @returns New iterable that is limited by given condition.
      */
     takeWhile(predicate) {
         const inner = () => {
@@ -469,7 +504,7 @@ class IterableWrapper {
         return new IterableWrapper(inner);
     }
     /**
-     * Calculates sum using a mapper funcation that produces the summed number for each element.
+     * Calculates sum using a mapper funcation that produces a number for each element.
      * @param mapper Function that returns a number for each element.
      * @returns Sum of all numbers returned by mapper function.
      */
@@ -477,26 +512,26 @@ class IterableWrapper {
         return this.reduce((acc, item) => acc + mapper(item), 0);
     }
     /**
-     * Finds minimum using a mapper function that produces the summed number for each element.
+     * Finds minimum using a mapper function that produces a number for each element.
      * @param mapper Function that returns a number for each element.
-     * @returns Minimum of all numbers returned by the mapper function. Undefined if iterable sequence is empty.
+     * @returns The smalllest of all numbers returned by the mapper function. Undefined if iterable sequence is empty.
      */
     min(mapper) {
         return this.reduce((acc, item) => Math.min(acc || Number.MAX_VALUE, mapper(item)), undefined);
     }
     /**
-     * Finds maximum using a mapper function that produces the summed number for each element.
+     * Finds maximum using a mapper function that produces a number for each element.
      * @param mapper Function that returns a number for each element.
-     * @returns Maximum of all numbers returned by mapper function. Undefined if iterable sequence is empty.
+     * @returns The biggest of all numbers returned by the mapper function. Undefined if iterable sequence is empty.
      */
     max(mapper) {
         return this.reduce((acc, item) => Math.max(acc || Number.MIN_VALUE, mapper(item)), undefined);
     }
     /**
-     * Returns new iterable that is an intersection with this instance and another one or an `Array`.
+     * Returns new `IterableWrapper<T>` which is contains intersection of this instance and another one or an `Array`.
      * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`.
-     * @param equalsFn Optional. Function that compares two elements. If ommitted, comparison will use equality operator ===.
-     * @returns An intersection of these iterables or arrays.
+     * @param equalsFn Function that compares two elements. If ommitted, comparison will use equality operator ===.
+     * @returns `IterableWrapper<T>` containing intersection of these iterables or arrays.
      */
     intersect(anotherCollection, equalsFn) {
         const another = Array.isArray(anotherCollection) ? anotherCollection : anotherCollection.toArray();
@@ -523,10 +558,10 @@ class IterableWrapper {
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
     }
     /**
-     * Subtracts another collection from this one. Elements present in the provided collection will be removed
-     * from this iterable sequence.
+     * Subtracts another collection from this one (performs set minus operation).<br>
+     * Creates new `IterableWrapper<T>` which contains all source elements except elements in another collection.
      * @param anotherCollection Another `IterableWrapper<T>` or `Array<T>`.
-     * @param equalsFn Optional. Function that compares two elements. If ommitted, comparison will use equality operator ===.
+     * @param equalsFn Function that compares two elements. If ommitted, comparison will use equality operator ===.
      * @returns Copy of this iterable sequence wihout elements found in another collection.
      */
     except(anotherCollection, equalsFn) {

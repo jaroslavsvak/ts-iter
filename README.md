@@ -5,8 +5,8 @@ Typescript library that provides higher-order functions working with ES 2015 ite
 
 The library is inspired by C# Linq and Java streams. It wraps an Array or another iterable and provides
 chainable functions such as map, filter, and reduce.
-There is additional functionality (that doesn't exist in arrays) and performance benefits when using iterables
-(array methods reconstruct the entire array whereas iterables make only a lightweight Iterator object instead).
+There is additional functionality (that doesn't exist in arrays) and performance benefits when using iterables.
+Array methods reconstruct the entire array whereas iterables make only a lightweight Iterator object instead.
 
 The library runs well in NodeJS 8.x, 9.x and browsers that support ES 2015. Recent versions of Chrome, FireFox, Edge, and Safari
 are fully supported. Beware that Internet Explorer does not support ES 2015 iterator contract
@@ -17,7 +17,8 @@ and thus this library is not working in any version of IE.
 npm install ts-iter
 ```
 
-Make sure that your TypeScript compiler targets ES 2015 or newer (otherwise your code won't compile):
+Make sure that your TypeScript compiler targets ES 2015 or newer (otherwise your code won't compile).
+Set target in your tsconfig.json file:
 ```json
 "target": "es2015"
 ```
@@ -25,7 +26,7 @@ Make sure that your TypeScript compiler targets ES 2015 or newer (otherwise your
 ## API documentation
 Front page [https://jsvak.azurewebsites.net/ts-iter](https://jsvak.azurewebsites.net/ts-iter)
 
-Index of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
+See of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html)
 
 ## Basic usage
 ```ts
@@ -151,7 +152,7 @@ console.log('Everything', allKnownFood.sort().toSeparatedString());
 ```
 
 ## All functions briefly
-See more detailed documentation at [https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_iter_.iterablewrapper.html)
+See more detailed documentation at [https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html)
 
 ```ts
 import { iter } from 'ts-iter';
@@ -200,10 +201,10 @@ iter(input).toArray();
 // Creates ReadonlyArray<number> = [5, 6, 7, 8]
 iter(input).toReadonlyArray();
 
-// Creates Set<number> = [5, 6, 7, 8], duplicate elements are removed from the set
+// Creates Set<number> = [5, 6, 7, 8] (duplicate elements are removed from the set)
 iter(input).toSet();
 
-// Creates ReadonlySet<number> = [5, 6, 7, 8], duplicate elements are removed from the set
+// Creates ReadonlySet<number> = [5, 6, 7, 8] (duplicate elements are removed from the set)
 iter(input).toReadonlySet();
 
 // Creates Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
@@ -279,4 +280,4 @@ iter(groups).flatMap(g => g.content);
 ```
 
 ## Author
-Jaroslav Svak, jsvak.azurewebsites.net
+Jaroslav Svak, https://jsvak.azurewebsites.net
