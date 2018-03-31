@@ -2,14 +2,20 @@
   "name": "ts-iter",
   "version": "0.7.0",
   "description": "Iterator utilities for TypeScript / ES2015",
-  "keywords": ["Typescript", "ES2015", "Iterator", "Collections", "Lazy"],
+  "keywords": [
+    "Typescript",
+    "ES2015",
+    "Iterator",
+    "Collections",
+    "Lazy"
+  ],
   "main": "index.js",
-  "directories": {
-  },
+  "directories": {},
   "scripts": {
     "test": "jasmine",
     "doc": "typedoc --out ./doc/ ./index.ts ./generators.ts"
   },
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jaroslavsvak/ts-iter.git"
