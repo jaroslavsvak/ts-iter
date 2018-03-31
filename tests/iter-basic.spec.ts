@@ -5,15 +5,28 @@ describe('iter-basic', () => {
 
     it('map', () => {
         const result = iter(input).map(x => x + 1).toArray();
-        const cmp = input.map(x => x + 1);
-        expect(result).toEqual(cmp);
+        expect(result).toEqual(input.map(x => x + 1));
     }),
+
+    it('map with index', () => {
+        const result = iter(input).map((x, index) => {
+            expect(x).toEqual(input[index]);
+            return x + 1;
+        });
+
+        expect(result.toArray()).toEqual(input.map(x => x + 1));
+    });
 
     it('filter', () => {
         const result = iter(input).filter(x => x > 10).toArray();
-        const cmp = input.filter(x => x > 10);
-        expect(result).toEqual(cmp);
+        expect(result).toEqual(input.filter(x => x > 10));
     }),
+
+    it('filter with index', () => {
+        const filterFn = (x: number, index: number) => index % 2 === 0;
+        const result = iter(input).filter(filterFn).toArray();
+        expect(result).toEqual(input.filter(filterFn));
+    });
 
     it('reduce', () => {
         const sum = iter(input).reduce((acc, x) => acc + x, 0);

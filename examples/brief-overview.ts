@@ -70,6 +70,12 @@ iter(input).head();
 // Returns number = 5 (the first element in the sequence; undefined if it's empty)
 iter(input).tryGetHead();
 
+// Returns number = 8 (the last element in the sequence; throws an error if it's empty)
+iter(input).tail();
+
+// Returns number = 8 (the last element in the sequence; undefined if it's empty)
+iter(input).tryGetTail();
+
 // Returns number = 6 (element at given index; throws an error if the index is out of bounds)
 iter(input).getAt(1);
 
@@ -87,6 +93,9 @@ iter(input).take(2);
 
 // Produces Iterable<number> = 7, 8 (skips the first N elements)
 iter(input).skip(2);
+
+// Returns boolean = true
+iter(input).sequenceEquals([5, 6, 7, 8]);
 
 
 // *** Math functions ***

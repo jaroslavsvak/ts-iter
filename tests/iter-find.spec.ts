@@ -68,5 +68,21 @@ describe('iter-find', () => {
         expect(head).toEqual(input[0]);
         expect(iter([]).tryGetHead()).toEqual(undefined);
     });
-});
 
+    it('tail', () => {
+        const tail = iter(input).tail();
+        expect(tail).toEqual(input[input.length - 1]);
+        expect(() => iter([]).tail()).toThrowError();
+    });
+
+    it('tryGetTail', () => {
+        const tail = iter(input).tryGetTail();
+        expect(tail).toEqual(input[input.length - 1]);
+        expect(iter([]).tryGetTail()).toEqual(undefined);
+
+        const input2 = input.map(x => x + 1);
+        const tail2 = iter(input2).tryGetTail();
+        expect(tail2).toEqual(input[input.length - 1] + 1);
+        expect(iter([].map(x => x)).tryGetTail()).toEqual(undefined);
+    });
+});

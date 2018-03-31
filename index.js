@@ -45,9 +45,10 @@ class IterableWrapper {
     map(mapper) {
         const inner = () => {
             const iterator = this.iterate();
+            let i = 0;
             return (function* () {
                 for (const item of iterator) {
-                    yield mapper(item);
+                    yield mapper(item, i++);
                 }
             })();
         };
@@ -63,9 +64,10 @@ class IterableWrapper {
     filter(predicate) {
         const inner = () => {
             const iterator = this.iterate();
+            let i = 0;
             return (function* () {
                 for (const item of iterator) {
-                    if (predicate(item)) {
+                    if (predicate(item, i++)) {
                         yield item;
                     }
                 }
@@ -224,7 +226,7 @@ class IterableWrapper {
      * `items` is array of elements belonging to the group distinguished by `key`.
      * @param keyMapper Makes a key for each element in the collection.
      * @returns Collection of groups with key and items associated with the key.
-     * @see toMap
+     * @see {@link toMap}
      */
     groupBy(keyMapper) {
         return iter(this.toMap(keyMapper).entries())
@@ -387,29 +389,62 @@ class IterableWrapper {
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
      * @returns The first element.
-     * @see tryGetHead
+     * @see {@link tryGetHead}
      */
     head() {
         const result = this.iterate().next();
         if (result.done) {
-            throw new Error('The iterable sequence is empty');
+            throw new Error(ERR_EMPTY);
         }
         return result.value;
     }
     /**
-     * Returns the first element in the iterable sequence. Returns `undefined` in case the iterable is empty.
-     * @returns The first element or undefined.
-     * @see head
+     * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
+     * @returns The last element.
+     * @see {@link head}
      */
     tryGetHead() {
         const result = this.iterate().next();
         return result.done ? undefined : result.value;
     }
     /**
+     * Returns the last element in the iterable sequence. Returns `undefined` in case the iterable is empty.<br>
+     * Optimized if the underlying iterable is an `Array`.
+     * @returns The last element or undefined.
+     * @see {@link tryGetTail}
+     */
+    tail() {
+        const result = this.tryGetTail();
+        if (result === undefined) {
+            throw new Error(ERR_EMPTY);
+        }
+        return result;
+    }
+    /**
+     * Returns the last element in the iterable sequence. Returns `undefined` in case the iterable is empty.<br>
+     * Optimized if the underlying iterable is an `Array`.
+     * @returns The last element or undefined.
+     * @see {@link tail}
+     */
+    tryGetTail() {
+        const iterator = this.openIteratorFn();
+        if (Array.isArray(iterator)) {
+            return iterator.length === 0 ? undefined : iterator[iterator.length - 1];
+        }
+        let result = undefined;
+        for (;;) {
+            const current = iterator.next();
+            if (current.done) {
+                return result;
+            }
+            result = current.value;
+        }
+    }
+    /**
      * Retrieves an element at given index.
      * @param index 0-based index
      * @returns Element at the index. Throws an error if the index is out of range.
-     * @see `tryGetAt`
+     * @see {@link tryGetAt}
      */
     getAt(index) {
         const result = this.tryGetAt(index);
@@ -588,8 +623,31 @@ class IterableWrapper {
         };
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
     }
+    /**
+     * Checks whether two collections are the same. I.e. they have the same length and elements at equal positions.
+     * @param anotherCollection Another iterable collectio
+     * @param equalsFn Equality check function. If omitted, equals operator === is applied.
+     */
+    sequenceEquals(anotherCollection, equalsFn) {
+        if (!equalsFn) {
+            equalsFn = (a, b) => a === b;
+        }
+        const iterThis = this.iterate();
+        const iterAnother = anotherCollection[Symbol.iterator]();
+        for (;;) {
+            const itThis = iterThis.next();
+            const itAnother = iterAnother.next();
+            if (itThis.done || itAnother.done) {
+                return itThis.done && itAnother.done;
+            }
+            if (!equalsFn(itThis.value, itAnother.value)) {
+                return false;
+            }
+        }
+    }
     iterate() {
         return this.openIteratorFn()[Symbol.iterator]();
     }
 }
 exports.IterableWrapper = IterableWrapper;
+const ERR_EMPTY = 'The iterable sequence is empty';

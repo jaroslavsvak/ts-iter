@@ -41,13 +41,14 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @param mapper Function that converts each item. Called lazily on demand.
      * @returns New `IterableWrapper<T>` with mapped content.
      */
-    map<TResult>(mapper: (item: T) => TResult): IterableWrapper<TResult> {
+    map<TResult>(mapper: (item: T, index: number) => TResult): IterableWrapper<TResult> {
         const inner = () => {
             const iterator = this.iterate();
+            let i = 0;
 
             return (function* () {
                 for (const item of iterator) {
-                    yield mapper(item);
+                    yield mapper(item, i++);
                 }
             })();
         }
@@ -62,13 +63,14 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Predicate is supposed to return `true` to accept and `false` to reject it.
      * @returns New `IterableWrapper<T>` with filtered content.
      */
-    filter(predicate: (item: T) => boolean): IterableWrapper<T> {
+    filter(predicate: (item: T, index: number) => boolean): IterableWrapper<T> {
         const inner = () => {
             const iterator = this.iterate();
+            let i = 0;
 
             return (function* () {
                 for (const item of iterator) {
-                    if (predicate(item)) {
+                    if (predicate(item, i++)) {
                         yield item;
                     }
                 }
@@ -248,7 +250,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * `items` is array of elements belonging to the group distinguished by `key`.
      * @param keyMapper Makes a key for each element in the collection.
      * @returns Collection of groups with key and items associated with the key.
-     * @see toMap
+     * @see {@link toMap}
      */
     groupBy<TKey>(keyMapper: (item: T) => TKey): IterableWrapper<{ key: TKey, items: IterableWrapper<T> }> {
         return iter(this.toMap(keyMapper).entries())
@@ -434,21 +436,21 @@ export class IterableWrapper<T> implements Iterable<T> {
     /**
      * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
      * @returns The first element.
-     * @see tryGetHead
+     * @see {@link tryGetHead}
      */
     head(): T {
         const result = this.iterate().next();
         if (result.done) {
-            throw new Error('The iterable sequence is empty');
+            throw new Error(ERR_EMPTY);
         }
 
         return result.value;
     }
 
     /**
-     * Returns the first element in the iterable sequence. Returns `undefined` in case the iterable is empty.
-     * @returns The first element or undefined.
-     * @see head
+     * Returns the first element in the iterable sequence. Throws an error in case the iterable is empty.
+     * @returns The last element.
+     * @see {@link head}
      */
     tryGetHead(): T | undefined {
         const result = this.iterate().next();
@@ -456,10 +458,48 @@ export class IterableWrapper<T> implements Iterable<T> {
     }
 
     /**
+     * Returns the last element in the iterable sequence. Returns `undefined` in case the iterable is empty.<br>
+     * Optimized if the underlying iterable is an `Array`.
+     * @returns The last element or undefined.
+     * @see {@link tryGetTail}
+     */
+    tail(): T {
+        const result = this.tryGetTail();
+        if (result === undefined) {
+            throw new Error(ERR_EMPTY);
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the last element in the iterable sequence. Returns `undefined` in case the iterable is empty.<br>
+     * Optimized if the underlying iterable is an `Array`.
+     * @returns The last element or undefined.
+     * @see {@link tail}
+     */
+    tryGetTail(): T | undefined {
+        const iterator = this.openIteratorFn();
+        if (Array.isArray(iterator)) {
+            return iterator.length === 0 ? undefined : iterator[iterator.length - 1];
+        }
+
+        let result = undefined;
+        for (;;) {
+            const current = iterator.next();
+            if (current.done) {
+                return result;
+            }
+
+            result = current.value;
+        }
+    }
+
+    /**
      * Retrieves an element at given index.
      * @param index 0-based index
      * @returns Element at the index. Throws an error if the index is out of range.
-     * @see `tryGetAt`
+     * @see {@link tryGetAt}
      */
     getAt(index: number): T {
         const result = this.tryGetAt(index);
@@ -674,7 +714,36 @@ export class IterableWrapper<T> implements Iterable<T> {
         return new IterableWrapper(equalsFn ? innerUseEqualsFn : innerUseIndexOf);
     }
 
+    /**
+     * Checks whether two collections are the same. I.e. they have the same length and elements at equal positions.
+     * @param anotherCollection Another iterable collectio
+     * @param equalsFn Equality check function. If omitted, equals operator === is applied.
+     */
+    sequenceEquals(anotherCollection: Iterable<T>, equalsFn?: (a: T, b: T) => boolean): boolean {
+        if (!equalsFn) {
+            equalsFn = (a: T, b: T) => a === b;
+        }
+
+        const iterThis = this.iterate();
+        const iterAnother = anotherCollection[Symbol.iterator]();
+
+        for (;;) {
+            const itThis = iterThis.next();
+            const itAnother = iterAnother.next();
+
+            if (itThis.done || itAnother.done) {
+                return itThis.done && itAnother.done;
+            }
+
+            if (!equalsFn(itThis.value, itAnother.value)) {
+                return false;
+            }
+        }
+    }
+
     private iterate(): IterableIterator<T> {
         return this.openIteratorFn()[Symbol.iterator]();
     }
 }
+
+const ERR_EMPTY = 'The iterable sequence is empty';

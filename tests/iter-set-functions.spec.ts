@@ -96,4 +96,13 @@ describe('iter-set-functions', () => {
         // reiteration test
         expect(result.toArray()).toEqual(expeceted);
     });
+
+    it('sequenceEquals', () => {
+        expect(iter(input1).sequenceEquals(input2)).toBe(false);
+        expect(iter(input2).sequenceEquals(input1)).toBe(false);
+
+        const clone = [...input1];
+        expect(iter(input1).sequenceEquals(clone)).toBe(true);
+        expect(iter(clone).sequenceEquals(input1)).toBe(true);
+    });
 });
