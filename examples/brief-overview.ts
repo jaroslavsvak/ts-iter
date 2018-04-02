@@ -128,3 +128,7 @@ const groups = [
 ];
 
 iter(groups).flatMap(g => g.content);
+
+// Produced Iterable<number> = 4, 5, 2, 0, 2, 20, 1, 6, 10 (flattens hierarchy)
+const multiDimMatrix = [4, 5, [2, 0, 2], [20, [1]], 6, 10];
+iter(multiDimMatrix).flatten();

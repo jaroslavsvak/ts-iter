@@ -354,18 +354,94 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Accesses nested collections as a single iterable. Provide a `mapper` function that is supposed
      * to return the nested `Array` contained within the element.
      * This function makes a new `IterableWrapper<TChildItem>` over all nested elements.
-     * @param mapper Returns nested collection for each element.
+     * @param nestedAccessor Returns nested collection for each element.
      * @returns `Iterable<TChildItem>` over all items in nested collections.
      */
-    flatMap<TItem>(mapper: (item: T) => TItem[]): IterableWrapper<TItem> {
+    flatMap<TItem>(nestedAccessor: (item: T) => TItem[]): IterableWrapper<TItem> {
         const inner = () => {
             const iterator = this.iterate();
 
             return function* () {
                 for (const item of iterator) {
-                    yield* mapper(item);
+                    yield* nestedAccessor(item);
                 }
             }();
+        }
+
+        return new IterableWrapper(inner);
+    }
+
+    /**
+     * Flattens a tree-like structure.<br>
+     * Creates an `IterableWrapper<T>` that recursivelly walks through all elements.
+     * @param nestedAccessor Function that is supposed to return nested collection. Each element in the nested collection
+     * may contain another nested collection which will be processed in the same way.<br>
+     * If the function returns `undefined`, it means that the gived element has no nested items
+     * or you want to skip them.
+     * @returns `IterableWrapper<T>` over the full tree-like structure.
+     */
+    flatten(nestedAccessor?: (item: T, level: number) => IterableIterator<T> | T[] | undefined) : IterableWrapper<T> {
+        const inner = () => {
+            nestedAccessor = nestedAccessor || (x => Array.isArray(x) ? x : undefined);
+
+            function* walk(iterator: IterableIterator<T>, level: number): IterableIterator<T> {
+                for (const item of iterator) {
+                    const subitems = nestedAccessor!(item, level);
+                    if (<any>subitems !== item) {
+                        yield item;
+                    }
+
+                    if (subitems) {
+                        if (Array.isArray(subitems)) {
+                            yield* walk(subitems[Symbol.iterator](), level + 1);
+                        } else {
+                            yield* walk(subitems, level + 1);
+                        }
+                    }
+                }
+            };
+
+            return walk(this.iterate(), 0);
+        }
+
+        return new IterableWrapper(inner);
+    }
+
+    /**
+     * Flattens a tree-like structure and creates new elements based on the source.<br>
+     * Creates an `IterableWrapper<T>` that recursivelly walks through all elements.
+     * Additionally maps each element passing it to a mapper function.
+     * @param nestedAccessor Function that is supposed to return nested collection. Each element in the nested collection
+     * may contain another nested collection which will be processed in the same way.<br>
+     * If the function returns `undefined`, it means that the gived element has no nested items
+     * or you want to skip them.
+     * @param mapper Function that converts each item. Called lazily on demand.
+     * @returns `IterableWrapper<T>` over the full tree-like structure.
+     */
+    flattenAndMap<TResult>(
+        nestedAccessor: (item: T, level: number) => IterableIterator<T> | T[] | undefined,
+        mapper: (item: T, level: number) => TResult)
+        : IterableWrapper<TResult> {
+
+        const inner = () => {
+            nestedAccessor = nestedAccessor || (x => Array.isArray(x) ? x : undefined);
+
+            function* walk(iterator: IterableIterator<T>, level: number): IterableIterator<TResult> {
+                for (const item of iterator) {
+                    const subitems = nestedAccessor(item, level);
+                    yield mapper(item, level);
+
+                    if (subitems) {
+                        if (Array.isArray(subitems)) {
+                            yield* walk(subitems[Symbol.iterator](), level + 1);
+                        } else {
+                            yield* walk(subitems, level + 1);
+                        }
+                    }
+                }
+            };
+
+            return walk(this.iterate(), 0);
         }
 
         return new IterableWrapper(inner);

@@ -1,4 +1,4 @@
-import { pipeArray } from '../pipe';
+import { pipe } from '../pipe';
 import * as core from '../index';
 
 describe('fn/core', () => {
@@ -7,12 +7,12 @@ describe('fn/core', () => {
     beforeEach(() => input = [5, 3, 5, 8, 12, 1, 20]);
 
     it('map+filter', () => {
-        const result = pipeArray(
-            input,
+        const result = pipe(
+            core.iterate(input),
             core.map(x => x + 1),
             core.filter(x => x > 6),
             core.map(x => x * 2),
-            core.toArray()
+            core.toArray
         );
 
         const cmp = input

@@ -1,3 +1,7 @@
+export function iterate<T>(array: T[]): IterableIterator<T> {
+    return array[Symbol.iterator]();
+}
+
 export function map<T, TResult>(mapper: (item: T) => TResult)
     : (source: IterableIterator<T>) => IterableIterator<TResult> {
 
@@ -30,8 +34,6 @@ export function reduce<T, TResult>(aggregator: (acc: TResult, item: T) => TResul
     };
 }
 
-export function toArray<T>(): (source: IterableIterator<T>) => T[] {
-    return function(source: IterableIterator<T>) {
-        return [...source];
-    };
+export function toArray<T>(source: IterableIterator<T>): T[] {
+    return [...source];
 }
