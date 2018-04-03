@@ -91,6 +91,17 @@ function every(predicate) {
     };
 }
 exports.every = every;
+function includes(item) {
+    return (source) => {
+        for (const content of source) {
+            if (content === item) {
+                return true;
+            }
+        }
+        return false;
+    };
+}
+exports.includes = includes;
 function flatMap(nestedAccessor) {
     return function* (source) {
         for (const item of source) {
@@ -102,7 +113,24 @@ function flatMap(nestedAccessor) {
     };
 }
 exports.flatMap = flatMap;
+function sort(compareFn) {
+    return function (source) {
+        const temp = [...source];
+        temp.sort(compareFn);
+        return temp[Symbol.iterator]();
+    };
+}
+exports.sort = sort;
 function toArray(source) {
     return [...source];
 }
 exports.toArray = toArray;
+function forEach(action) {
+    return (source) => {
+        let index = 0;
+        for (const item of source) {
+            action(item, index++);
+        }
+    };
+}
+exports.forEach = forEach;

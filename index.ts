@@ -343,10 +343,12 @@ export class IterableWrapper<T> implements Iterable<T> {
      * Similar to `Array.forEach`.<br>
      * Executes a function on each element in the iterable sequence.
      * @param action Function executed on each element.
+     * @param index Index of the element.
      */
-    forEach(action: (item: T) => void): void {
+    forEach(action: (item: T, index: number) => void): void {
+        let index = 0;
         for (const item of this.iterate()) {
-            action(item);
+            action(item, index++);
         }
     }
 

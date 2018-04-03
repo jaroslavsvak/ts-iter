@@ -86,4 +86,32 @@ describe('fn/core', () => {
         result = core.every(x => x > 500)(core.iterate(input));
         expect(result).toBe(false);
     });
+
+    it('includes', () => {
+        let result = core.includes(12)(core.iterate(input));
+        expect(result).toBe(true);
+
+        result = core.includes(500)(core.iterate(input));
+        expect(result).toBe(false);
+    });
+
+    it('forEach', () => {
+        const result: number[] = [];
+
+        pipe(
+            core.iterate(input),
+            core.forEach((x, i) => result.push(x + i)));
+
+        expect(result).toEqual(input.map((x, i) => x + i));
+    });
+
+    it('sort', () => {
+        function compare(a: number, b: number) {
+            return a - b;
+        }
+
+        const result = core.sort(compare)(core.iterate(input));
+        const cmp = [...input].sort(compare);
+        expect(core.toArray(result)).toEqual(cmp);
+    });
 });

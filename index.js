@@ -306,10 +306,12 @@ class IterableWrapper {
      * Similar to `Array.forEach`.<br>
      * Executes a function on each element in the iterable sequence.
      * @param action Function executed on each element.
+     * @param index Index of the element.
      */
     forEach(action) {
+        let index = 0;
         for (const item of this.iterate()) {
-            action(item);
+            action(item, index++);
         }
     }
     /**

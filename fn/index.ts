@@ -100,6 +100,18 @@ export function every<T>(predicate: (item: T) => boolean): (source: IterableIter
     };
 }
 
+export function includes<T>(item: T): (source: IterableIterator<T>) => boolean {
+    return (source: IterableIterator<T>) => {
+        for (const content of source) {
+            if (content === item) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+}
+
 export function flatMap<T, TNestedItem>(nestedAccessor: (item: T) => TNestedItem[])
     : (source: IterableIterator<T>) => IterableIterator<TNestedItem> {
     
@@ -113,6 +125,25 @@ export function flatMap<T, TNestedItem>(nestedAccessor: (item: T) => TNestedItem
     };
 }
 
+export function sort<T>(compareFn: (a: T, b: T) => number)
+    : (source: IterableIterator<T>) => IterableIterator<T> {
+
+    return function(source: IterableIterator<T>) {
+        const temp = [...source];
+        temp.sort(compareFn);
+        return temp[Symbol.iterator]();
+    };
+}
+
 export function toArray<T>(source: IterableIterator<T>): T[] {
     return [...source];
+}
+
+export function forEach<T>(action: (item: T, index: number) => void): (source: IterableIterator<T>) => void {
+    return (source: IterableIterator<T>) => {
+        let index = 0;
+        for (const item of source) {
+            action(item, index++);
+        }
+    };
 }
