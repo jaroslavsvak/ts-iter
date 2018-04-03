@@ -1,7 +1,6 @@
 # Compiled output
 /examples/*.js
-/fn/tests/*.js
-/tests/*.js
+/tests/**/*.js
 /doc
 
 # Logs
