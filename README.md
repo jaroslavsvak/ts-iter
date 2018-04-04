@@ -228,10 +228,10 @@ iter(input).head();
 iter(input).tryGetHead();
 
 // Returns number = 8 (the last element in the sequence; throws an error if it's empty)
-iter(input).tail();
+iter(input).last();
 
 // Returns number = 8 (the last element in the sequence; undefined if it's empty)
-iter(input).tryGetTail();
+iter(input).tryGetLast();
 
 // Returns number = 6 (element at given index; throws an error if the index is out of bounds)
 iter(input).getAt(1);

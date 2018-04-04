@@ -125,6 +125,15 @@ export function flatMap<T, TNestedItem>(nestedAccessor: (item: T) => TNestedItem
     };
 }
 
+export function concat<T>(anotherColl: IterableIterator<T>)
+    : (source: IterableIterator<T>) => IterableIterator<T> {
+
+    return function* (source: IterableIterator<T>) {
+        yield* source;
+        yield* anotherColl;
+    };
+}
+
 export function sort<T>(compareFn: (a: T, b: T) => number)
     : (source: IterableIterator<T>) => IterableIterator<T> {
 
@@ -137,6 +146,10 @@ export function sort<T>(compareFn: (a: T, b: T) => number)
 
 export function toArray<T>(source: IterableIterator<T>): T[] {
     return [...source];
+}
+
+export function toReadonlyArray<T>(source: IterableIterator<T>): ReadonlyArray<T> {
+    return [...source] as ReadonlyArray<T>;
 }
 
 export function forEach<T>(action: (item: T, index: number) => void): (source: IterableIterator<T>) => void {

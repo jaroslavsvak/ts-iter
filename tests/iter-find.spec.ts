@@ -69,20 +69,20 @@ describe('iter-find', () => {
         expect(iter([]).tryGetHead()).toEqual(undefined);
     });
 
-    it('tail', () => {
-        const tail = iter(input).tail();
-        expect(tail).toEqual(input[input.length - 1]);
-        expect(() => iter([]).tail()).toThrowError();
+    it('last', () => {
+        const last = iter(input).last();
+        expect(last).toEqual(input[input.length - 1]);
+        expect(() => iter([]).last()).toThrowError();
     });
 
-    it('tryGetTail', () => {
-        const tail = iter(input).tryGetTail();
-        expect(tail).toEqual(input[input.length - 1]);
-        expect(iter([]).tryGetTail()).toEqual(undefined);
+    it('tryGetLast', () => {
+        const last = iter(input).tryGetLast();
+        expect(last).toEqual(input[input.length - 1]);
+        expect(iter([]).tryGetLast()).toEqual(undefined);
 
         const input2 = input.map(x => x + 1);
-        const tail2 = iter(input2).tryGetTail();
-        expect(tail2).toEqual(input[input.length - 1] + 1);
-        expect(iter([].map(x => x)).tryGetTail()).toEqual(undefined);
+        const last2 = iter(input2).tryGetLast();
+        expect(last2).toEqual(input[input.length - 1] + 1);
+        expect(iter([].map(x => x)).tryGetLast()).toEqual(undefined);
     });
 });

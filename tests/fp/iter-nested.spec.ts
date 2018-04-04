@@ -1,5 +1,5 @@
-import { pipe } from '../../fn/pipe';
-import * as core from '../../fn/index';
+import { pipe } from '../../fp/pipe';
+import * as core from '../../fp/index';
 
 interface FileSystemObj {
     name: string,

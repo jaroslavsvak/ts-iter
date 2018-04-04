@@ -53,6 +53,9 @@ iter(input).toReadonlySet();
 // Creates Map<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
 iter(input).toMap(x => x > 6 ? 'big' : 'small');
 
+// Creates ReadonlyMap<string, number> = { 'small' => [ 5, 6 ], 'big' => [ 7, 8 ] }
+iter(input).toReadonlyMap(x => x > 6 ? 'big' : 'small');
+
 // Creates string = "5; 6; 7; 8"
 iter(input).toSeparatedString('; ');
 
@@ -71,10 +74,10 @@ iter(input).head();
 iter(input).tryGetHead();
 
 // Returns number = 8 (the last element in the sequence; throws an error if it's empty)
-iter(input).tail();
+iter(input).last();
 
 // Returns number = 8 (the last element in the sequence; undefined if it's empty)
-iter(input).tryGetTail();
+iter(input).tryGetLast();
 
 // Returns number = 6 (element at given index; throws an error if the index is out of bounds)
 iter(input).getAt(1);

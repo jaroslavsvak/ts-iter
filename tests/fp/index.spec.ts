@@ -1,5 +1,5 @@
-import { pipe } from '../../fn/pipe';
-import * as core from '../../fn/index';
+import { pipe } from '../../fp/pipe';
+import * as core from '../../fp/index';
 
 describe('fn/core', () => {
     let input: number[] = [];
@@ -103,6 +103,17 @@ describe('fn/core', () => {
             core.forEach((x, i) => result.push(x + i)));
 
         expect(result).toEqual(input.map((x, i) => x + i));
+    });
+
+    it('concat+toReadonlyArray', () => {
+        const result = pipe(
+            core.iterate(input),
+            core.concat(core.iterate(input)),
+            core.concat(core.iterate(input)),
+            core.toReadonlyArray
+        );
+
+        expect(result).toEqual(input.concat(input).concat(input));
     });
 
     it('sort', () => {

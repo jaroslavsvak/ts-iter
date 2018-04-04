@@ -14,14 +14,6 @@ export function tryGetHead() {
 
 }
 
-export function tail() {
-
-}
-
-export function tryGetTail() {
-
-}
-
 export function skip() {
 
 }
