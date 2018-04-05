@@ -631,11 +631,9 @@ export class IterableWrapper<T> implements Iterable<T> {
             function* inner() {
                 let counter = 0;
                 for (const item of iterator) {
-                    if (counter++ < numElements) {
-                        continue;
+                    if (counter++ >= numElements) {
+                        yield item;
                     }
-
-                    yield item;
                 }
             };
 

@@ -560,10 +560,9 @@ class IterableWrapper {
             function* inner() {
                 let counter = 0;
                 for (const item of iterator) {
-                    if (counter++ < numElements) {
-                        continue;
+                    if (counter++ >= numElements) {
+                        yield item;
                     }
-                    yield item;
                 }
             }
             ;
