@@ -1,8 +1,7 @@
 # Compiled output
-/examples/*.js
-/tests/**/*.js
 /doc
-/dist
+/dist/**/*.js
+/dist/**/*.ts
 
 # Logs
 logs

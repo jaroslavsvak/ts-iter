@@ -82,3 +82,15 @@ export function pipe<TInput, TOp0, TOp1, TOp2, TOp3, TOp4, TOp5, TOp6, TOp7, TOp
     op7: (src: TOp6) => TOp7,
     op8: (src: TOp7) => TOp8,
     op9: (src: TOp8) => TResult) : TResult;
+
+
+export function pipe(input: any, ...ops: any[]) {
+    let result = input;
+
+    for (const operation of ops) {
+        result = operation(result);
+    }
+
+    return result;
+}
+    
