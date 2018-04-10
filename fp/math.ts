@@ -3,10 +3,7 @@ export function min<T>(mapper: (item: T) => number): (source: IterableIterator<T
         let result: number | undefined = undefined;
 
         for (const item of source) {
-            const current = mapper(item);
-            if (result === undefined || result > current) {
-                result = current;
-            }
+            result = Math.min(result === undefined ? Number.MAX_VALUE : result, mapper(item));
         }
 
         return result;
@@ -18,10 +15,7 @@ export function max<T>(mapper: (item: T) => number): (source: IterableIterator<T
         let result: number | undefined = undefined;
 
         for (const item of source) {
-            const current = mapper(item);
-            if (result === undefined || result < current) {
-                result = current;
-            }
+            result = Math.max(result === undefined ? Number.MIN_VALUE : result, mapper(item));
         }
 
         return result;

@@ -18,6 +18,11 @@ describe('iter-calc', () => {
         expect(result).toEqual(3);
     });
 
+    it('min 0', () => {
+        const result = iter([5, 2, 0, 10]).min(x => x);
+        expect(result).toEqual(0);
+    });
+
     it('min in empty collection', () => {
         const empty: number[] = [];
         expect(iter(empty).min(x => x)).toBe(undefined);

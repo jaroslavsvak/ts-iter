@@ -2,6 +2,7 @@
 /examples/*.js
 /tests/**/*.js
 /doc
+/dist
 
 # Logs
 logs

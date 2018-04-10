@@ -703,7 +703,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     min(mapper: (item: T) => number): number | undefined {
         return this.reduce((acc: number | undefined, item) =>
-            Math.min(acc || Number.MAX_VALUE, mapper(item)),
+            Math.min(acc === undefined ? Number.MAX_VALUE : acc, mapper(item)),
             undefined);
     }
 
@@ -714,7 +714,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     max(mapper: (item: T) => number): number | undefined {
         return this.reduce((acc: number | undefined, item) =>
-            Math.max(acc || Number.MIN_VALUE, mapper(item)),
+            Math.max(acc === undefined ? Number.MIN_VALUE : acc, mapper(item)),
             undefined);
     }
 
