@@ -1,6 +1,6 @@
 {
   "name": "ts-iter",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Iterator utilities for TypeScript / ES2015",
   "keywords": [
     "Typescript",
