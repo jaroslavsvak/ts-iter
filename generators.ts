@@ -21,3 +21,14 @@ export function* rangeInclusive(from: number, to: number, step: number = 1) {
         yield i;
     }
 }
+
+/**
+ * Generates a sequence that yields the same item n-times.
+ * @param item Any item or value
+ * @param times Number of times to repeat
+ */
+export function* repeat<T>(item: T, times: number) {
+    for (let i = 0; i < times; i++) {
+        yield item;
+    }
+}
