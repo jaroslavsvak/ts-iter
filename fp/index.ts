@@ -144,6 +144,15 @@ export function sort<T>(compareFn: (a: T, b: T) => number)
     };
 }
 
+export function tap<T>(tapFn: (item: T) => void) {
+    return function* (source: IterableIterator<T>) {
+        for (const item of source) {
+            tapFn(item);
+            yield item;
+        }
+    }
+}
+
 export function toArray<T>(source: IterableIterator<T>): T[] {
     return [...source];
 }

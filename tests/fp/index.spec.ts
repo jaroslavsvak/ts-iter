@@ -1,4 +1,4 @@
-import { pipe } from '../../fp/pipe';
+import { pipeArray } from '../../fp/pipe-array';
 import * as core from '../../fp/index';
 
 describe('fn/core', () => {
@@ -7,8 +7,8 @@ describe('fn/core', () => {
     beforeEach(() => input = [5, 3, 5, 8, 12, 1, 20]);
 
     it('map+filter', () => {
-        const result = pipe(
-            core.iterate(input),
+        const result = pipeArray(
+            input,
             core.map(x => x + 1),
             core.filter(x => x > 6),
             core.map(x => x * 2),
@@ -23,8 +23,8 @@ describe('fn/core', () => {
     });
 
     it('map w index', () => {
-        const result = pipe(
-            core.iterate(input),
+        const result = pipeArray(
+            input,
             core.map((x, i) => x + i),
             core.toArray);
 
@@ -33,8 +33,8 @@ describe('fn/core', () => {
     });
 
     it('filter w index', () => {
-        const result = pipe(
-            core.iterate(input),
+        const result = pipeArray(
+            input,
             core.filter((x, i) => x + i > 10),
             core.toArray);
 
@@ -98,16 +98,16 @@ describe('fn/core', () => {
     it('forEach', () => {
         const result: number[] = [];
 
-        pipe(
-            core.iterate(input),
+        pipeArray(
+            input,
             core.forEach((x, i) => result.push(x + i)));
 
         expect(result).toEqual(input.map((x, i) => x + i));
     });
 
     it('concat+toReadonlyArray', () => {
-        const result = pipe(
-            core.iterate(input),
+        const result = pipeArray(
+            input,
             core.concat(core.iterate(input)),
             core.concat(core.iterate(input)),
             core.toReadonlyArray
