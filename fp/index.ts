@@ -1,3 +1,8 @@
+/**
+ * Gets an iterator over an array. Same as `array[Symbol.iterator]()` or `array.values()`.<br>
+ * Prefer `array.values()` if it's available in your target platform (only newest browswers and Node.js at the moment).
+ * @param array Array to be iterated
+ */
 export function iterate<T>(array: T[]): IterableIterator<T> {
     return array[Symbol.iterator]();
 }
