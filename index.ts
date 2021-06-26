@@ -183,7 +183,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      * @returns `true` if there are no elements in the wrapped iterable.
      */
     isEmpty(): boolean {
-        return this.iterate().next().done;
+        return !!this.iterate().next().done;
     }
 
     /**
@@ -330,7 +330,7 @@ export class IterableWrapper<T> implements Iterable<T> {
      */
     toSeparatedString(separator: string = ', ', convert?: (item: T) => string | undefined): string {
         if (!convert) {
-            convert = (item) => item && item.toString();
+            convert = (item) => item && (<any>item).toString();
         }
 
         let result = '';
@@ -813,7 +813,7 @@ export class IterableWrapper<T> implements Iterable<T> {
             const itAnother = iterAnother.next();
 
             if (itThis.done || itAnother.done) {
-                return itThis.done && itAnother.done;
+                return (itThis.done && itAnother.done) || false;
             }
 
             if (!equalsFn(itThis.value, itAnother.value)) {

@@ -26,7 +26,7 @@ Set target in your tsconfig.json file:
 ## API documentation
 Front page [https://jsvak.azurewebsites.net/ts-iter](https://jsvak.azurewebsites.net/ts-iter)
 
-See of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/_index_.iterablewrapper.html)
+See of all functions provided by IterableWrapper [https://jsvak.azurewebsites.net/ts-iter/classes/index.iterablewrapper.html](https://jsvak.azurewebsites.net/ts-iter/classes/index.iterablewrapper.html)
 
 ## Basic usage
 ```ts

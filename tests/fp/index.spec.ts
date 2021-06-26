@@ -55,7 +55,7 @@ describe('fn/core', () => {
         expect(result).toBe(true);
     });
 
-    it('find', () => {
+    /*it('find', () => {
         let result = core.find(x => x > 5)(core.iterate(input));
         expect(result).toEqual(input.find(x => x > 5));
 
@@ -85,7 +85,7 @@ describe('fn/core', () => {
 
         result = core.every(x => x > 500)(core.iterate(input));
         expect(result).toBe(false);
-    });
+    });*/
 
     it('includes', () => {
         let result = core.includes(12)(core.iterate(input));

@@ -51,7 +51,7 @@ export function length<T>(source: IterableIterator<T>): number {
 }
 
 export function isEmpty<T>(source: IterableIterator<T>): boolean {
-    return source.next().done;
+    return !!source.next().done;
 }
 
 export function find<T>(predicate: (item: T) => boolean): (source: IterableIterator<T>) => T | undefined {
